@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Agregar Nuevo Producto</h2>
+
+        <input type="text" id="newProduct" placeholder="Nombre del producto">
+        <input type="number" id="newPrice" placeholder="Precio por KG en USD">
+        <button onclick="addProduct()">Guardar Producto</button>
+
+        <button onclick="window.location.href='index.html'">Volver</button>
+    </div>
+
+    <script>
+        function addProduct() {
+            let productName = document.getElementById('newProduct').value.trim();
+            let productPrice = parseFloat(document.getElementById('newPrice').value);
+
+            if (productName && !isNaN(productPrice) && productPrice > 0) {
+                let storedProducts = JSON.parse(localStorage.getItem('products')) || {};
+                storedProducts[productName] = productPrice;
+                localStorage.setItem('products', JSON.stringify(storedProducts));
+
+                alert("Producto agregado con éxito.");
+                window.location.href = 'index.html'; // Redirigir a la página principal
+            } else {
+                alert("Ingrese valores válidos.");
+            }
+        }
+    </script>
+</body>
+</html>

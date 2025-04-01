@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        select, input, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calculadora de Precios</h2>
+
+        <button onclick="window.location.href='add-product.html'">Agregar Nuevo Producto</button>
+        <button onclick="window.location.href='history.html'">Ver Historial de Compras</button>
+
+        <label for="product">Producto:</label>
+        <select id="product"></select>
+
+        <label for="grams">Gramos:</label>
+        <input type="number" id="grams" placeholder="Ingrese gramos">
+
+        <button onclick="addToCart()">Agregar al Carrito</button>
+        <p id="dollarRate">Cargando tasa del dólar BCV...</p>
+
+        <h3>Carrito de Compras</h3>
+        <div id="cart"></div>
+        <p><strong>Total: $<span id="totalUSD">0.00</span> / <span id="totalBs">0.00</span> Bs</strong></p>
+        <button onclick="confirmPurchase()">Confirmar Compra</button>
+    </div>
+
+    <script>
+        let dollarRate = 0;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Función para obtener la tasa del dólar BCV
+        async function fetchDollarRate() {
+            try {
+                let response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                let data = await response.json();
+                dollarRate = data.rates.VES;
+                document.getElementById('dollarRate').innerText = `Dólar BCV: ${dollarRate.toFixed(2)} Bs`;
+            } catch (error) {
+                document.getElementById('dollarRate').innerText = "Error al cargar la tasa del dólar.";
+            }
+        }
+
+        // Cargar productos desde localStorage
+        function loadProducts() {
+            let storedProducts = JSON.parse(localStorage.getItem('products')) || {};
+            let select = document.getElementById('product');
+            select.innerHTML = ""; 
+
+            for (let name in storedProducts) {
+                let option = document.createElement('option');
+                option.value = storedProducts[name];
+                option.textContent = name;
+                select.appendChild(option);
+            }
+        }
+
+        // Agregar productos al carrito
+        function addToCart() {
+            let productName = document.getElementById('product').selectedOptions[0].text;
+            let productPricePerKg = parseFloat(document.getElementById('product').value);
+            let grams = parseFloat(document.getElementById('grams').value);
+
+            if (!isNaN(grams) && grams > 0 && dollarRate > 0) {
+                let priceInDollars = (productPricePerKg / 1000) * grams;
+                if (grams < 250) {
+                    priceInDollars *= 1.6;
+                }
+                let priceInBs = priceInDollars * dollarRate;
+
+                cart.push({ name: productName, grams, priceInDollars, priceInBs });
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
+            }
+        }
+
+        // Renderizar el carrito
+        function renderCart() {
+            let cartContainer = document.getElementById('cart');
+            cartContainer.innerHTML = "";
+
+            let totalUSD = 0;
+            let totalBs = 0;
+
+            cart.forEach((item, index) => {
+                totalUSD += item.priceInDollars;
+                totalBs += item.priceInBs;
+
+                let div = document.createElement('div');
+                div.className = "cart-item";
+                div.innerHTML = `
+                    <span>${item.name} - ${item.grams}g - $${item.priceInDollars.toFixed(2)} / ${item.priceInBs.toFixed(2)} Bs</span>
+                    <button onclick="removeFromCart(${index})">❌</button>
+                `;
+                cartContainer.appendChild(div);
+            });
+
+            document.getElementById('totalUSD').innerText = totalUSD.toFixed(2);
+            document.getElementById('totalBs').innerText = totalBs.toFixed(2);
+        }
+
+        // Eliminar un producto del carrito
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function confirmPurchase() {
+    if (cart.length === 0) {
+        alert("El carrito está vacío.");
+        return;
+    }
+
+    let history = JSON.parse(localStorage.getItem('history')) || [];
+
+    let transaction = {
+        date: new Date().toLocaleString(),
+        items: [...cart]
+    };
+
+    history.push(transaction);
+    localStorage.setItem('history', JSON.stringify(history));
+
+    cart = [];
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    renderCart();
+    alert("Compra confirmada. Puedes verla en el historial.");
+}
+
+        window.onload = function () {
+            fetchDollarRate();
+            loadProducts();
+            renderCart();
+        };
+    </script>
+</body>
+</html>

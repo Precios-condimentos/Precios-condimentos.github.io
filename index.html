@@ -35,11 +35,29 @@
     <div class="container">
         <h2>Calculadora de Precios</h2>
 
-        <button onclick="window.location.href='add-product.html'">Agregar Nuevo Producto</button>
         <button onclick="window.location.href='history.html'">Ver Historial de Compras</button>
 
         <label for="product">Producto:</label>
-        <select id="product"></select>
+        <select id="product">
+            <option value="4.20">Aliño semi</option>
+            <option value="2.88">Adobo semi</option>
+            <option value="4.12">Carmencita</option>
+            <option value="2.58">Cubito semi</option>
+            <option value="6.04">Pimienta semi</option>
+            <option value="3.60">Curry semi</option>
+            <option value="4.60">Ajo semi</option>
+            <option value="8.64">Comino semi</option>
+            <option value="4.32">Sabroceador</option>
+            <option value="8.80">Oregano M</option>
+            <option value="7">Oregano E</option>
+            <option value="4.60">Combinados</option>
+            <option value="7.30">Aliño</option>
+            <option value="7">cubito</option>
+            <option value="6.48">Adobo puro</option>
+            <option value="5.30">Ajo mix</option>
+            <option value="18">Ajo Granulado</option>
+            <option value="17.04">Cebolla</option>
+        </select>
 
         <label for="grams">Gramos:</label>
         <input type="number" id="grams" placeholder="Ingrese gramos">
@@ -66,20 +84,6 @@
                 document.getElementById('dollarRate').innerText = `Dólar BCV: ${dollarRate.toFixed(2)} Bs`;
             } catch (error) {
                 document.getElementById('dollarRate').innerText = "Error al cargar la tasa del dólar.";
-            }
-        }
-
-        // Cargar productos desde localStorage
-        function loadProducts() {
-            let storedProducts = JSON.parse(localStorage.getItem('products')) || {};
-            let select = document.getElementById('product');
-            select.innerHTML = ""; 
-
-            for (let name in storedProducts) {
-                let option = document.createElement('option');
-                option.value = storedProducts[name];
-                option.textContent = name;
-                select.appendChild(option);
             }
         }
 
@@ -135,31 +139,30 @@
         }
 
         function confirmPurchase() {
-    if (cart.length === 0) {
-        alert("El carrito está vacío.");
-        return;
-    }
+            if (cart.length === 0) {
+                alert("El carrito está vacío.");
+                return;
+            }
 
-    let history = JSON.parse(localStorage.getItem('history')) || [];
+            let history = JSON.parse(localStorage.getItem('history')) || [];
 
-    let transaction = {
-        date: new Date().toLocaleString(),
-        items: [...cart]
-    };
+            let transaction = {
+                date: new Date().toLocaleString(),
+                items: [...cart]
+            };
 
-    history.push(transaction);
-    localStorage.setItem('history', JSON.stringify(history));
+            history.push(transaction);
+            localStorage.setItem('history', JSON.stringify(history));
 
-    cart = [];
-    localStorage.setItem('cart', JSON.stringify(cart));
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
 
-    renderCart();
-    alert("Compra confirmada. Puedes verla en el historial.");
-}
+            renderCart();
+            alert("Compra confirmada. Puedes verla en el historial.");
+        }
 
         window.onload = function () {
             fetchDollarRate();
-            loadProducts();
             renderCart();
         };
     </script>

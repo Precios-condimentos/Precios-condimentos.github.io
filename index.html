@@ -19,7 +19,7 @@
             box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         }
         select, input, button {
-            width: 100%;
+            width: 95%;
             margin: 10px 0;
             padding: 10px;
         }
@@ -37,26 +37,227 @@
 
         <button onclick="window.location.href='history.html'">Ver Historial de Compras</button>
 
+        <label for="category">Categoría:</label>
+        <select id="category" onchange="filterProducts()">
+            <option value="all">Todas</option>
+            <option value="Condimentos semi">Condimentos semi</option>
+            <option value="Condimentos Puros">Condimentos puros</option>
+            <option value="Hierbas e Infusiones">Hierbas e Infusiones</option>
+            <option value="Semillas">Semillas</option>
+            <option value="Maniseria">Maniseria</option>
+            <option value="Turrones">Turrones</option>
+            <option value="Granos">Granos</option>
+            <option value="Químicos">Quimicos</option>
+            <option value="Esencias">Esencias</option>
+            <option value="Bolsas">Bolsas</option>
+            <option value="Animales">Animales</option>
+            <option value="Colores">Colores</option>
+            <option value="Repostería">Respoteria</option>
+        </select>
+
         <label for="product">Producto:</label>
         <select id="product">
-            <option value="4.20">Aliño semi</option>
-            <option value="2.88">Adobo semi</option>
-            <option value="4.12">Carmencita</option>
-            <option value="2.58">Cubito semi</option>
-            <option value="6.04">Pimienta semi</option>
-            <option value="3.60">Curry semi</option>
-            <option value="4.60">Ajo semi</option>
-            <option value="8.64">Comino semi</option>
-            <option value="4.32">Sabroceador</option>
-            <option value="8.80">Oregano M</option>
-            <option value="7">Oregano E</option>
-            <option value="4.60">Combinados</option>
-            <option value="7.30">Aliño</option>
-            <option value="7">cubito</option>
-            <option value="6.48">Adobo puro</option>
-            <option value="5.30">Ajo mix</option>
-            <option value="18">Ajo Granulado</option>
-            <option value="17.04">Cebolla</option>
+            <option value="4.20" data-category="Condimentos semi">Aliño semi</option>
+        <option value="2.88" data-category="Condimentos semi">Adobo semi</option>
+        <option value="4.12" data-category="Condimentos semi">Carmencita</option>
+        <option value="2.58" data-category="Condimentos semi">Cubito semi</option>
+        <option value="6.04" data-category="Condimentos semi">Pimienta semi</option>
+        <option value="3.60" data-category="Condimentos semi">Curry semi</option>
+        <option value="4.60" data-category="Condimentos semi">Ajo semi</option>
+        <option value="8.64" data-category="Condimentos semi">Comino semi</option>
+        <option value="4.32" data-category="Condimentos semi">Sabroceador semi</option>
+        <option value="8.80" data-category="Condimentos semi">Orégano Molido</option>
+        <option value="7.00" data-category="Condimentos semi">Orégano Entero</option>
+        <option value="4.60" data-category="Condimentos semi">Combinaditos</option>
+
+        <option value="7.30" data-category="Condimentos Puros">Aliño</option>
+        <option value="7.00" data-category="Condimentos Puros">Cubito</option>
+        <option value="6.48" data-category="Condimentos Puros">Adobo</option>
+        <option value="5.30" data-category="Condimentos Puros">Ajo Mix</option>
+        <option value="18.00" data-category="Condimentos Puros">Ajo Granulado</option>
+        <option value="17.04" data-category="Condimentos Puros">Cebolla</option>
+        <option value="12.00" data-category="Condimentos Puros">Cúrcuma</option>
+        <option value="7.56" data-category="Condimentos Puros">Jengibre</option>
+        <option value="15.04" data-category="Condimentos Puros">Paprika Dulce</option>
+        <option value="13.04" data-category="Condimentos Puros">Paprika Picante</option>
+        <option value="20.00" data-category="Condimentos Puros">Comino</option>
+        <option value="11.04" data-category="Condimentos Puros">Curry</option>
+        <option value="26.00" data-category="Condimentos Puros">Pimienta</option>
+        <option value="5.94" data-category="Condimentos Puros">Trifogón</option>
+        <option value="40.00" data-category="Condimentos Puros">7 Especies</option>
+        <option value="5.94" data-category="Condimentos Puros">Salchina</option>
+        <option value="8.50" data-category="Condimentos Puros">Ajo Entero</option>
+
+        <option value="18.00" data-category="Hierbas e Infusiones">Flor de Jamaica</option>
+        <option value="21.67" data-category="Hierbas e Infusiones">Manzanilla</option>
+        <option value="22.00" data-category="Hierbas e Infusiones">Té Verde</option>
+        <option value="15.04" data-category="Hierbas e Infusiones">Hierbabuena</option>
+        <option value="22.00" data-category="Hierbas e Infusiones">Té Negro</option>
+        <option value="14.00" data-category="Hierbas e Infusiones">Sen</option>
+        <option value="13.60" data-category="Hierbas e Infusiones">Tomillo</option>
+        <option value="11.04" data-category="Hierbas e Infusiones">Menta</option>
+        <option value="15.00" data-category="Hierbas e Infusiones">Laurel</option>
+        <option value="13.60" data-category="Hierbas e Infusiones">Romero</option>
+        <option value="14.00" data-category="Hierbas e Infusiones">Albahaca</option>
+        <option value="19.44" data-category="Hierbas e Infusiones">Stevia</option>
+        <option value="39.00" data-category="Hierbas e Infusiones">Clavitos</option>
+        <option value="25.00" data-category="Hierbas e Infusiones">Canela Entera</option>
+        <option value="27.00" data-category="Hierbas e Infusiones">Canela Molida</option>
+        <option value="28.00" data-category="Hierbas e Infusiones">Anís Estrellado</option>
+        <option value="19.66" data-category="Hierbas e Infusiones">Malagueta</option>
+        <option value="9.28" data-category="Hierbas e Infusiones">Perejil</option>
+        <option value="55.00" data-category="Hierbas e Infusiones">Tilo</option>
+        <option value="7.2" data-category="Hierbas e Infusiones">Vinagre de manzana</option>
+        <option value="28.08" data-category="Hierbas e Infusiones">Aceite de coco</option>
+        <option value="7.13" data-category="Hierbas e Infusiones">Aceite de oliva</option>
+        <option value="36.00" data-category="Hierbas e Infusiones">nuez moscada</option>
+        <option value="0.75" data-category="Hierbas e Infusiones">Panela</option>
+
+
+        <option value="18.40" data-category="Semillas">Chía</option>
+        <option value="14.20" data-category="Semillas">Anís Dulce</option>
+        <option value="4.24" data-category="Semillas">Linaza</option>
+        <option value="5.60" data-category="Semillas">Girasol</option>
+        <option value="5.40" data-category="Semillas">Auyama</option>
+        <option value="4.32" data-category="Semillas">Patilla</option>
+        <option value="7.23" data-category="Semillas">Fenogreco</option>
+        <option value="4.86" data-category="Semillas">Ajonjolí Natural</option>
+        <option value="12.00" data-category="Semillas">Ajonjolí Blanco</option>
+        <option value="16.00" data-category="Semillas">Ajonjolí Negro</option>
+        <option value="18.00" data-category="Semillas">Comino Entero</option>
+        <option value="24.00" data-category="Semillas">Pimienta Negra</option>
+        <option value="40.00" data-category="Semillas">Pimienta Blanca</option>
+        <option value="50.00" data-category="Semillas">Pimienta Roja</option>
+        <option value="14.00" data-category="Semillas">Hinojo</option>
+        <option value="13.04" data-category="Semillas">Quinoa</option>
+        <option value="7.04" data-category="Semillas">Mostaza</option>
+        <option value="14.00" data-category="Semillas">Cilantro</option>
+        <option value="5.55" data-category="Semillas">Cebada</option>
+        <option value="10.74" data-category="Semillas">Aceitunas</option>
+        <option value="7.50" data-category="Semillas">Alcaparras</option>
+        <option value="5.18" data-category="Semillas">Trigo Fino</option>
+        <option value="2.70" data-category="Semillas">Avena</option>
+        <option value="2.70" data-category="Semillas">Afrecho</option>
+        <option value="17.50" data-category="Semillas">Achote</option>
+        <option value="0.50" data-category="Semillas">Sal de Mesa</option>
+        <option value="8.60" data-category="Semillas">Pasas</option>
+        <option value="13.80" data-category="Semillas">Ciruela Pasas</option>
+        <option value="10.00" data-category="Semillas">Sal Rosada</option>
+        <option value="2.35" data-category="Semillas">Sal Marina</option>
+        
+        <option value="7.20" data-category="Maniseria">Frutos secos</option>
+        <option value="18.00" data-category="Maniseria">Maíz Tostado</option>
+        <option value="7.10" data-category="Maniseria">Maní Triturado</option>
+        <option value="8.00" data-category="Maniseria">Cocomani</option>
+        <option value="12.60" data-category="Maniseria">Maní Salado Jumbo</option>
+        <option value="6.40" data-category="Maniseria">Maní con Ajonjolí</option>
+        <option value="8.00" data-category="Maniseria">Maní Pimienta Limón</option>
+        <option value="8.40" data-category="Maniseria">Maní con Concha</option>
+        <option value="6.40" data-category="Maniseria">Maní Garrapiñado</option>
+        <option value="8.60" data-category="Maniseria">Maní con Sal</option>
+        <option value="7.23" data-category="Maniseria">Maní sin Sal</option>
+        <option value="12.80" data-category="Maniseria">Maní Japonés y Variantes</option>
+        <option value="18.13" data-category="Maniseria">Almendras</option>
+        <option value="37.56" data-category="Maniseria">Almendras Fileteadas</option>
+        <option value="24.00" data-category="Maniseria">Almendras con Ajonjolí</option>
+        <option value="20.16" data-category="Maniseria">Almendras con Coco</option>
+        <option value="27.60" data-category="Maniseria">Almendras Garrapiñadas</option>
+        <option value="30.08" data-category="Maniseria">Almendras Saladas</option>
+        <option value="24.69" data-category="Maniseria">Avellanas</option>
+        <option value="33.15" data-category="Maniseria">Merey</option>
+        <option value="33.58" data-category="Maniseria">Pistacho</option>
+        <option value="27.60" data-category="Maniseria">Nueces</option>
+
+        <option value="0.40" data-category="Turrones">Blanco con Maní</option>
+        <option value="0.40" data-category="Turrones">Acaramelado con Ajonjolí</option>
+        <option value="0.40" data-category="Turrones">Acaramelado con Maní</option>
+        <option value="0.40" data-category="Turrones">Mixto</option>
+        <option value="2.16" data-category="Turrones">Almendras</option>
+        <option value="2.50" data-category="Turrones">Avellanas</option>
+        <option value="2.16" data-category="Turrones">Merey</option>
+        <option value="3.83" data-category="Turrones">Pistacho</option>
+        <option value="2.16" data-category="Turrones">Gourmet</option>
+
+
+        <option value="5.20" data-category="Granos">Caraota Negra</option>
+        <option value="3.02" data-category="Granos">Caraota Roja</option>
+        <option value="3.24" data-category="Granos">Caraota Blanca</option>
+        <option value="4.75" data-category="Granos">Arvejas</option>
+        <option value="5.50" data-category="Granos">Lentejas</option>
+        <option value="2.32" data-category="Granos">Cotufas</option>
+        <option value="4.80" data-category="Granos">Garbanzos</option>
+        <option value="1.62" data-category="Granos">Pico Negro</option>
+
+        <option value="9.04" data-category="Químicos">Benzoato</option>
+        <option value="6.78" data-category="Químicos">Sal de Epson</option>
+        <option value="5.20" data-category="Químicos">Ácido Cítrico</option>
+        <option value="3.87" data-category="Químicos">Azufre</option>
+        <option value="12.56" data-category="Químicos">Ácido Bórico</option>
+        <option value="7.70" data-category="Químicos">Alumbre</option>
+
+        <option value="1.30" data-category="Esencias">JUNIOR</option>
+        <option value="5.60" data-category="Esencias">SABRIMAX, PRODISABOR</option>
+        <option value="3.93" data-category="Esencias">AREQUIPE, LECHE C</option>
+        <option value="3.51" data-category="Esencias">PIÑA</option>
+        <option value="4.80" data-category="Esencias">NATA</option>
+        <option value="3.40" data-category="Esencias">BANANA</option>
+        <option value="3.60" data-category="Esencias">COCO</option>
+        <option value="3.40" data-category="Esencias">NARANJA</option>
+
+        <option value="1.20" data-category="Bolsas">5X9</option>
+        <option value="1.30" data-category="Bolsas">6X11</option>
+        <option value="1.30" data-category="Bolsas">7X11</option>
+        <option value="1.70" data-category="Bolsas">8X13</option>
+        <option value="1.80" data-category="Bolsas">9X15</option>
+        <option value="1.78" data-category="Bolsas">CARTON</option>
+
+        <option value="4.68" data-category="Animales">GATARINA</option>
+        <option value="2.76" data-category="Animales">PERRARINA CACHO</option>
+        <option value="2.28" data-category="Animales">PERRARINA ADULTO</option>
+        <option value="4.56" data-category="Animales">ALPISTE</option>
+        <option value="6.00" data-category="Animales">ARENA</option>
+        <option value="4.92" data-category="Animales">GATARINA EMPACADA</option>
+
+        <option value="8.00" data-category="Colores">AMARILLO</option>
+        <option value="8.66" data-category="Colores">AMARILLO LIMA</option>
+        <option value="6.00" data-category="Colores">AMARILLO PAELLERO</option>
+        <option value="15.22" data-category="Colores">AZUL</option>
+        <option value="14.32" data-category="Colores">CHOCOLATE</option>
+        <option value="17.66" data-category="Colores">ROJO</option>
+        <option value="13.00" data-category="Colores">ROJO BRILLANTE</option>
+        <option value="17.66" data-category="Colores">ROJO FRAMBUESA</option>
+        <option value="19.66" data-category="Colores">ROSADO</option>
+        <option value="14.66" data-category="Colores">UVA</option>
+        <option value="9.33" data-category="Colores">VERDE</option>
+        <option value="11.00" data-category="Colores">VERDE MANZANA</option>
+
+        <option value="6.00" data-category="Repostería">Nevazúcar</option>
+        <option value="8.44" data-category="Repostería">Arequipe</option>
+        <option value="10.08" data-category="Repostería">Chocomalti</option>
+        <option value="6.48" data-category="Repostería">Lluvia de Chocolate</option>
+        <option value="14.40" data-category="Repostería">Maní Cubierto de Chocolate</option>
+        <option value="6.24" data-category="Repostería">Lluvia de Colores</option>
+        <option value="7.56" data-category="Repostería">Grageas</option>
+        <option value="11.76" data-category="Repostería">Cerezas</option>
+        <option value="8.42" data-category="Repostería">Chantilly Líquido</option>
+        <option value="25.02" data-category="Repostería">Chantilly en Polvo</option>
+        <option value="5.46" data-category="Repostería">Maizena</option>
+        <option value="8.80" data-category="Repostería">Polvo de Hornear</option>
+        <option value="20.04" data-category="Repostería">Cacao</option>
+        <option value="6.36" data-category="Repostería">Levadura</option>
+        <option value="12.96" data-category="Repostería">Pudin y Flan</option>
+        <option value="23.84" data-category="Repostería">Gelatina sin Sabor</option>
+        <option value="10.00" data-category="Repostería">Gelatina de Sabor</option>
+        <option value="18.00" data-category="Repostería">Esencia de Vainilla</option>
+        <option value="6.39" data-category="Repostería">Mini dandy</option>
+        <option value="11.40" data-category="Repostería">Fruta Confitada</option>
+        <option value="4.56" data-category="Repostería">Caramelina</option>
+        <option value="3.75" data-category="Repostería">Leche evaporada</option>
+        <option value="12.04" data-category="Repostería">Coco Rallado</option>
+        <option value="14.28" data-category="Repostería">Perlas</option>
+        <option value="19.68" data-category="Repostería">Gramilla</option>
+        <option value="13.04" data-category="Repostería">CMC</option>
+        <option value="3.24" data-category="Repostería">Azúcar Morena</option> 
         </select>
 
         <label for="grams">Gramos:</label>
@@ -96,75 +297,69 @@
             if (!isNaN(grams) && grams > 0 && dollarRate > 0) {
                 let priceInDollars = (productPricePerKg / 1000) * grams;
                 if (grams < 250) {
-                    priceInDollars *= 1.6;
+                    priceInDollars *= 1.6;  // Ajuste para cantidades menores a 250g
                 }
+
                 let priceInBs = priceInDollars * dollarRate;
 
-                cart.push({ name: productName, grams, priceInDollars, priceInBs });
+                // Agregar el producto al carrito
+                cart.push({ productName, grams, priceInDollars, priceInBs });
                 localStorage.setItem('cart', JSON.stringify(cart));
-                renderCart();
+
+                updateCart();
             }
         }
 
-        // Renderizar el carrito
-        function renderCart() {
-            let cartContainer = document.getElementById('cart');
-            cartContainer.innerHTML = "";
-
+        // Actualizar el carrito en la interfaz
+        function updateCart() {
+            let cartHTML = '';
             let totalUSD = 0;
             let totalBs = 0;
 
-            cart.forEach((item, index) => {
+            cart.forEach(item => {
+                cartHTML += `
+                    <div class="cart-item">
+                        <span>${item.productName} (${item.grams}g)</span>
+                        <span>$${item.priceInDollars.toFixed(2)} / Bs ${item.priceInBs.toFixed(2)}</span>
+                    </div>
+                `;
                 totalUSD += item.priceInDollars;
                 totalBs += item.priceInBs;
-
-                let div = document.createElement('div');
-                div.className = "cart-item";
-                div.innerHTML = `
-                    <span>${item.name} - ${item.grams}g - $${item.priceInDollars.toFixed(2)} / ${item.priceInBs.toFixed(2)} Bs</span>
-                    <button onclick="removeFromCart(${index})">❌</button>
-                `;
-                cartContainer.appendChild(div);
             });
 
+            document.getElementById('cart').innerHTML = cartHTML;
             document.getElementById('totalUSD').innerText = totalUSD.toFixed(2);
             document.getElementById('totalBs').innerText = totalBs.toFixed(2);
         }
 
-        // Eliminar un producto del carrito
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
-        }
-
+        // Confirmar compra y generar factura
         function confirmPurchase() {
-            if (cart.length === 0) {
-                alert("El carrito está vacío.");
-                return;
-            }
+            let totalUSD = 0;
+            let totalBs = 0;
+            let purchaseDetails = `Factura de Compra\n\n`;
 
-            let history = JSON.parse(localStorage.getItem('history')) || [];
+            cart.forEach(item => {
+                totalUSD += item.priceInDollars;
+                totalBs += item.priceInBs;
+                purchaseDetails += `${item.productName} (${item.grams}g): $${item.priceInDollars.toFixed(2)} / Bs ${item.priceInBs.toFixed(2)}\n`;
+            });
 
-            let transaction = {
-                date: new Date().toLocaleString(),
-                items: [...cart]
-            };
+            purchaseDetails += `\nTotal: $${totalUSD.toFixed(2)} / Bs ${totalBs.toFixed(2)}`;
 
-            history.push(transaction);
-            localStorage.setItem('history', JSON.stringify(history));
+            // Imprimir factura
+            let printWindow = window.open('', '', 'width=600,height=400');
+            printWindow.document.write('<pre>' + purchaseDetails + '</pre>');
+            printWindow.document.close();
+            printWindow.print();
 
+            // Vaciar carrito
             cart = [];
-            localStorage.setItem('cart', JSON.stringify(cart));
-
-            renderCart();
-            alert("Compra confirmada. Puedes verla en el historial.");
+            localStorage.removeItem('cart');
+            updateCart();
         }
 
-        window.onload = function () {
-            fetchDollarRate();
-            renderCart();
-        };
+        fetchDollarRate();
+        updateCart();
     </script>
 </body>
 </html>

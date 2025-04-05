@@ -1,86 +1,134 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Compras</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        }
-        .transaction {
-            border-bottom: 2px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .transaction h3 {
-            color: #333;
-        }
-        .item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-        }
-        .back-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .back-button:hover {
-            background-color: #45a049;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Historial de Compras</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .compra {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      padding: 15px;
+      page-break-inside: avoid;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f2f2f2;
+    }
+    button {
+      margin-top: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+      }
+      button, .no-print {
+        display: none !important;
+      }
+      .compra {
+        margin-bottom: 30px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Historial de Compras</h2>
-        <div id="history"></div>
-        <button class="back-button" onclick="window.location.href='index.html'">Volver a la página principal</button>
-    </div>
+  <h2>Historial de Compras</h2>
+  <button onclick="borrarHistorial()" class="no-print" style="margin-bottom: 20px;">🗑️ Borrar Historial</button>
+  <div id="historial-container"></div>
 
-    <script>
-        window.onload = function() {
-            let history = JSON.parse(localStorage.getItem('history')) || [];
+  <script>
+    const historialContainer = document.getElementById('historial-container');
+    const historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
 
-            let historyContainer = document.getElementById('history');
+    if (historial.length === 0) {
+      historialContainer.innerHTML = "<p>No hay compras registradas para hoy.</p>";
+    } else {
+      historial.forEach((compra, index) => {
+        const compraDiv = document.createElement('div');
+        compraDiv.classList.add('compra');
 
-            if (history.length === 0) {
-                historyContainer.innerHTML = '<p>No hay compras registradas.</p>';
-                return;
-            }
+        const itemsHTML = compra.items.map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>${item.price_usd_kg.toFixed(2)}</td>
+            <td>${item.totalPriceUSD.toFixed(2)}</td>
+          </tr>
+        `).join('');
 
-            history.forEach((transaction, index) => {
-                let transactionDiv = document.createElement('div');
-                transactionDiv.classList.add('transaction');
+        compraDiv.innerHTML = `
+          <strong>Factura #${index + 1}</strong><br>
+          <strong>Fecha y Hora:</strong> ${compra.fecha}
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad (g)</th>
+                <th>Precio Unitario ($/kg)</th>
+                <th>Subtotal ($)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHTML}
+            </tbody>
+          </table>
+          <p><strong>Total: $${compra.totalUSD.toFixed(2)} / Bs ${compra.totalBs.toFixed(2)}</strong></p>
+          <button class="no-print" onclick="imprimirFactura(this)">🖨️ Imprimir esta factura</button>
+        `;
 
-                transactionDiv.innerHTML = `
-                    <h3>Compra #${index + 1} - ${transaction.date}</h3>
-                    <div>
-                        ${transaction.items.map(item => `
-                            <div class="item">
-                                <span>${item.name} - ${item.grams}g</span>
-                                <span>$${item.priceInDollars.toFixed(2)} / ${item.priceInBs.toFixed(2)} Bs</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                historyContainer.appendChild(transactionDiv);
-            });
-        };
-    </script>
+        historialContainer.appendChild(compraDiv);
+      });
+    }
+
+    function borrarHistorial() {
+      const confirmacion = confirm("¿Estás seguro de que quieres borrar todo el historial?");
+      if (confirmacion) {
+        localStorage.removeItem("historialCompras");
+        location.reload();
+      }
+    }
+
+    function imprimirFactura(boton) {
+      const factura = boton.parentElement.cloneNode(true);
+      factura.querySelector('button')?.remove(); // Elimina el botón de imprimir
+      const ventana = window.open('', '_blank');
+      ventana.document.write(`
+        <html>
+          <head>
+            <title>Factura</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 30px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background: #f2f2f2; }
+            </style>
+          </head>
+          <body>${factura.innerHTML}</body>
+        </html>
+      `);
+      ventana.document.close();
+      ventana.focus();
+      ventana.print();
+    }
+  </script>
 </body>
 </html>

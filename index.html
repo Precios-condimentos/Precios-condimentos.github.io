@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Precios</title>
+    <script src="historial.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,13 +60,32 @@
             background-color: #f2f2f2;
         }
         @media print {
-            .no-print {
-                display: none;
-            }
-            body {
-                font-family: 'Arial', sans-serif;
-            }
-        }
+  @page {
+    size: 80mm auto;
+    margin: 5mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #invoice, #invoice * {
+    visibility: visible;
+  }
+
+  #invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+
     </style>
 </head>
 <body>
@@ -302,28 +322,43 @@
         <div id="cart"></div>
         <p><strong>Total: $<span id="totalUSD">0.00</span> / Bs <span id="totalBs">0.00</span></strong></p>
         <button onclick="confirmPurchase()" id="confirmBtn" disabled>Confirmar Compra</button>
+        <button onclick="window.open('historial.html', '_blank')" class="no-print">Ver Historial de Compras</button>
+
     </div>
 
     <div id="invoice" class="container" style="display: none;">
-        <h2>Factura</h2>
+        <h2 style="text-align: center;">Colores con Sabores</h2>
+        <p style="text-align: center;"> CALLE VENEZUELA</p>
+        <p style="text-align: center;">CIUDAD OJEDA, ESTADO ZULIA</p>
+        <P style="text-align: center;">ZONA POSTAL 4019</P>
+        <p><strong>Fecha y Hora:</strong> <span id="invoice-date"></span></p>
+        <p><strong>Cliente:</strong> Consumidor Final</p>
+      
         <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Cantidad (g)</th>
-                    <th>Precio Unit. ($/kg)</th>
-                    <th>Subtotal ($)</th>
-                </tr>
-            </thead>
-            <tbody id="invoice-items">
-            </tbody>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>$/kg</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="invoice-items">
+            <!-- Se llena con JS -->
+          </tbody>
         </table>
+      
         <div class="invoice-total">
-            <strong>Total a Pagar: $<span id="invoice-total-usd">0.00</span> / Bs <span id="invoice-total-bs">0.00</span></strong>
+          Total a Pagar: $<span id="invoice-total-usd">0.00</span> / Bs <span id="invoice-total-bs">0.00</span>
         </div>
-        <button onclick="printInvoice()" class="no-print">Imprimir Factura</button>
+      
+        <button onclick="printInvoice()" class="no-print">🖨️ Imprimir Factura</button>
         <button onclick="goBack()" class="no-print">Volver a la Calculadora</button>
-    </div>
+      </div>
+     
+
+
+      
 
     <script>
         let dollarRate = 0;
@@ -688,40 +723,73 @@
         }
     
         function confirmPurchase() {
-            if (cart.length > 0) {
-                renderInvoice();
-                document.getElementById('calculator').style.display = 'none';
-                document.getElementById('invoice').style.display = 'block';
-            } else {
-                alert("El carrito está vacío. Agrega productos antes de confirmar la compra.");
-            }
-        }
+    if (cart.length === 0) {
+        alert("El carrito está vacío. Agrega productos antes de confirmar la compra.");
+        return;
+    }
+
+    const now = new Date();
+    const fechaHora = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Mostrar la fecha en la factura
+    document.getElementById("invoice-date").innerText = fechaHora;
+
+    // Guardar compra en historial
+    const compra = {
+        fecha: fechaHora,
+        items: [...cart], // Copiamos el contenido del carrito
+        totalUSD: cart.reduce((sum, item) => sum + item.totalPriceUSD, 0),
+        totalBs: cart.reduce((sum, item) => sum + item.totalPriceBs, 0)
+    };
+
+    let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
+
+    // Limpiar entradas de días anteriores
+    const hoy = new Date().toLocaleDateString();
+    historial = historial.filter(c => c.fecha.startsWith(hoy));
+
+    historial.push(compra);
+    localStorage.setItem("historialCompras", JSON.stringify(historial));
+
+    // Mostrar factura
+    renderInvoice();
+    document.getElementById('calculator').style.display = 'none';
+    document.getElementById('invoice').style.display = 'block';
+}
+
     
         function renderInvoice() {
-            const invoiceItemsBody = document.getElementById('invoice-items');
-            const invoiceTotalUSD = document.getElementById('invoice-total-usd');
-            const invoiceTotalBs = document.getElementById('invoice-total-bs');
-            let invoiceHTML = '';
-            let totalUSD = 0;
-            let totalBs = 0;
+    const now = new Date();
+    const fechaHora = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
-            cart.forEach(item => {
-                invoiceHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.quantity}</td>
-                        <td>${item.price_usd_kg.toFixed(2)}</td>
-                        <td>${item.totalPriceUSD.toFixed(2)}</td>
-                    </tr>
-                `;
-                totalUSD += item.totalPriceUSD;
-                totalBs += item.totalPriceBs;
-            });
-    
-            invoiceItemsBody.innerHTML = invoiceHTML;
-            invoiceTotalUSD.textContent = totalUSD.toFixed(2);
-            invoiceTotalBs.textContent = totalBs.toFixed(2);
-        }
+    document.getElementById("invoice-date").innerText = fechaHora;
+
+    const invoiceItemsBody = document.getElementById('invoice-items'); 
+    const invoiceTotalUSD = document.getElementById('invoice-total-usd');
+    const invoiceTotalBs = document.getElementById('invoice-total-bs');
+
+    let invoiceHTML = '';
+    let totalUSD = 0;
+    let totalBs = 0;
+
+    cart.forEach(item => {
+        invoiceHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.price_usd_kg.toFixed(2)}</td>
+                <td>${item.totalPriceUSD.toFixed(2)}</td>
+            </tr>
+        `;
+        totalUSD += item.totalPriceUSD;
+        totalBs += item.totalPriceBs;
+    });
+
+    invoiceItemsBody.innerHTML = invoiceHTML;
+    invoiceTotalUSD.textContent = totalUSD.toFixed(2);
+    invoiceTotalBs.textContent = totalBs.toFixed(2);
+}
+
     
         function printInvoice() {
             window.print();

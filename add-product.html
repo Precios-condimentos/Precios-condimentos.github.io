@@ -1,57 +1,121 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agregar Producto</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
+// historial.js
+
+// Guardar compra al historial
+function savePurchaseToHistory(cart) {
+    const now = new Date();
+    const dateKey = now.toISOString().split('T')[0]; // "2025-04-04"
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
+    if (!stored[dateKey]) {
+        stored[dateKey] = [];
+    }
+
+    stored[dateKey].push({
+        time: time,
+        items: cart,
+    });
+
+    localStorage.setItem("purchaseHistory", JSON.stringify(stored));
+}
+
+// Mostrar historial en la interfaz
+function showHistory() {
+    const historyDiv = document.getElementById("history");
+    historyDiv.innerHTML = "<h3>Historial de Compras</h3>";
+    const dateKey = new Date().toISOString().split('T')[0];
+    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
+    const purchases = stored[dateKey] || [];
+
+    if (purchases.length === 0) {
+        historyDiv.innerHTML += "<p>No hay compras registradas hoy.</p>";
+        return;
+    }
+
+    purchases.forEach((purchase, index) => {
+        const facturaId = `factura-${index}`;
+        let html = `
+            <div class="historial-factura" style="border:1px solid #ccc; margin:10px 0; padding:10px;">
+                <strong>Compra ${index + 1} - ${purchase.time}</strong>
+                <ul>`;
+
+        purchase.items.forEach(item => {
+            html += `<li>${item.name} - ${item.quantity}g - $${item.totalPriceUSD.toFixed(2)}</li>`;
+        });
+
+        html += `</ul>
+                <button onclick="printHistoryInvoice(${index})">Imprimir</button>
+            </div>`;
+
+        historyDiv.innerHTML += html;
+    });
+
+    historyDiv.innerHTML += `<button onclick="clearHistory()" style="margin-top:10px;">Borrar Historial</button>`;
+    historyDiv.style.display = "block";
+}
+
+// Imprimir factura desde historial
+function printHistoryInvoice(index) {
+    const dateKey = new Date().toISOString().split('T')[0];
+    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
+    const purchase = stored[dateKey][index];
+
+    let invoiceHTML = `
+        <h2>Factura</h2>
+        <span>${dateKey} ${purchase.time}</span>
+        <table><thead><tr>
+            <th>Producto</th><th>Cant (g)</th><th>$/kg</th><th>Subtotal</th>
+        </tr></thead><tbody>`;
+
+    let totalUSD = 0;
+    let totalBs = 0;
+    purchase.items.forEach(item => {
+        invoiceHTML += `<tr>
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>${item.price_usd_kg.toFixed(2)}</td>
+            <td>${item.totalPriceUSD.toFixed(2)}</td>
+        </tr>`;
+        totalUSD += item.totalPriceUSD;
+        totalBs += item.totalPriceBs;
+    });
+
+    invoiceHTML += `</tbody></table>
+        <div class="invoice-total">
+            <strong>Total: $${totalUSD.toFixed(2)} / Bs ${totalBs.toFixed(2)}</strong>
+        </div>`;
+
+    const printWindow = window.open('', '', 'width=400,height=600');
+    printWindow.document.write(`<html><head><title>Factura</title><style>
+        body { font-family: monospace; font-size: 12px; width: 80mm; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 4px; border: none; text-align: left; }
+        .invoice-total { text-align: right; margin-top: 10px; }
+        h2 { text-align: center; margin: 0 0 10px 0; }
+    </style></head><body>${invoiceHTML}</body></html>`);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Borrar historial del día
+function clearHistory() {
+    if (confirm("¿Estás seguro de que quieres borrar el historial de hoy?")) {
+        const dateKey = new Date().toISOString().split('T')[0];
+        const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
+        delete stored[dateKey];
+        localStorage.setItem("purchaseHistory", JSON.stringify(stored));
+        document.getElementById("history").style.display = "none";
+    }
+}
+
+// Eliminar historial de días anteriores automáticamente
+window.onload = function () {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
+    for (let key in stored) {
+        if (key !== today) {
+            delete stored[key];
         }
-        .container {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        }
-        input, button {
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Agregar Nuevo Producto</h2>
-
-        <input type="text" id="newProduct" placeholder="Nombre del producto">
-        <input type="number" id="newPrice" placeholder="Precio por KG en USD">
-        <button onclick="addProduct()">Guardar Producto</button>
-
-        <button onclick="window.location.href='index.html'">Volver</button>
-    </div>
-
-    <script>
-        function addProduct() {
-            let productName = document.getElementById('newProduct').value.trim();
-            let productPrice = parseFloat(document.getElementById('newPrice').value);
-
-            if (productName && !isNaN(productPrice) && productPrice > 0) {
-                let storedProducts = JSON.parse(localStorage.getItem('products')) || {};
-                storedProducts[productName] = productPrice;
-                localStorage.setItem('products', JSON.stringify(storedProducts));
-
-                alert("Producto agregado con éxito.");
-                window.location.href = 'index.html'; // Redirigir a la página principal
-            } else {
-                alert("Ingrese valores válidos.");
-            }
-        }
-    </script>
-</body>
-</html>
+    }
+    localStorage.setItem("purchaseHistory", JSON.stringify(stored));
+};

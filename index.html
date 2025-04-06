@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Precios</title>
+    <script src="historial.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -321,7 +322,7 @@
         <div id="cart"></div>
         <p><strong>Total: $<span id="totalUSD">0.00</span> / Bs <span id="totalBs">0.00</span></strong></p>
         <button onclick="confirmPurchase()" id="confirmBtn" disabled>Confirmar Compra</button>
-        <button onclick="window.open('history.html', '_blank')" class="no-print">Ver Historial de Compras</button>
+        <button onclick="window.open('historial.html', '_blank')" class="no-print">Ver Historial de Compras</button>
 
     </div>
 
@@ -733,47 +734,19 @@
     // Mostrar la fecha en la factura
     document.getElementById("invoice-date").innerText = fechaHora;
 
-    function savePurchaseToHistory(cart) {
-  const now = new Date();
-  const fechaHora = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    // Guardar compra en historial
+    const compra = {
+        fecha: fechaHora,
+        items: [...cart], // Copiamos el contenido del carrito
+        totalUSD: cart.reduce((sum, item) => sum + item.totalPriceUSD, 0),
+        totalBs: cart.reduce((sum, item) => sum + item.totalPriceBs, 0)
+    };
 
-  const totalUSD = cart.reduce((sum, item) => sum + item.totalPriceUSD, 0);
-  const totalBs = cart.reduce((sum, item) => sum + item.totalPriceBs, 0);
+    let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
 
-  const compra = {
-    fecha: fechaHora,
-    items: cart,
-    totalUSD,
-    totalBs
-  };
-
-  const hoy = new Date().toLocaleDateString();
-  let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
-  historial = historial.filter(c => c.fecha.startsWith(hoy));
-  historial.push(compra);
-  localStorage.setItem("historialCompras", JSON.stringify(historial));
-
-  fetch("https://script.google.com/macros/s/AKfycbzCEoEG2goeX_umMT8_CfOWa56TDXK7M1XTlwcJnohwEaLYOs5ufFbpKVUC2ZmS1q80/exec", {
-    method: "POST",
-    body: JSON.stringify(compra),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  })
-  .then(res => console.log("✅ Compra enviada a Google Sheets"))
-  .catch(err => console.error("❌ Error al enviar a Sheets:", err));
-}
-
-    // Recuperar historial de compras desde localStorage (si existe)
-let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
-
-// Limpiar entradas de días anteriores
-const hoy = new Date().toLocaleDateString();
-historial = historial.filter(c => c.fecha.startsWith(hoy));
-
-// Luego puedes actualizar el historial si lo necesitas
-localStorage.setItem("historialCompras", JSON.stringify(historial));
-
+    // Limpiar entradas de días anteriores
+    const hoy = new Date().toLocaleDateString();
+    historial = historial.filter(c => c.fecha.startsWith(hoy));
 
     historial.push(compra);
     localStorage.setItem("historialCompras", JSON.stringify(historial));

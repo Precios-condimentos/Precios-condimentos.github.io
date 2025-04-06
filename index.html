@@ -756,7 +756,7 @@
   localStorage.setItem("historialCompras", JSON.stringify(historial));
 
   // 🔼 Esto guarda en Google Sheets
-  fetch("TU_URL_DE_LA_WEB_APP", {
+  fetch("https://script.google.com/macros/s/AKfycbzCEoEG2goeX_umMT8_CfOWa56TDXK7M1XTlwcJnohwEaLYOs5ufFbpKVUC2ZmS1q80/exec", {
     method: "POST",
     body: JSON.stringify(compra),
     headers: {

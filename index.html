@@ -748,13 +748,6 @@
     totalBs
   };
 
-  // 🔽 Esto guarda en localStorage (opcional)
-  const hoy = new Date().toLocaleDateString();
-  let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
-  historial = historial.filter(c => c.fecha.startsWith(hoy));
-  historial.push(compra);
-  localStorage.setItem("historialCompras", JSON.stringify(historial));
-
   // 🔼 Esto guarda en Google Sheets
   fetch("https://script.google.com/macros/s/AKfycbzCEoEG2goeX_umMT8_CfOWa56TDXK7M1XTlwcJnohwEaLYOs5ufFbpKVUC2ZmS1q80/exec", {
     method: "POST",

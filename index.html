@@ -734,15 +734,39 @@
     // Mostrar la fecha en la factura
     document.getElementById("invoice-date").innerText = fechaHora;
 
-    // Guardar compra en historial
-    const compra = {
-        fecha: fechaHora,
-        items: [...cart], // Copiamos el contenido del carrito
-        totalUSD: cart.reduce((sum, item) => sum + item.totalPriceUSD, 0),
-        totalBs: cart.reduce((sum, item) => sum + item.totalPriceBs, 0)
-    };
+    function savePurchaseToHistory(cart) {
+  const now = new Date();
+  const fechaHora = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
+  const totalUSD = cart.reduce((sum, item) => sum + item.totalPriceUSD, 0);
+  const totalBs = cart.reduce((sum, item) => sum + item.totalPriceBs, 0);
+
+  const compra = {
+    fecha: fechaHora,
+    items: cart,
+    totalUSD,
+    totalBs
+  };
+
+  // 🔽 Esto guarda en localStorage (opcional)
+  const hoy = new Date().toLocaleDateString();
+  let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
+  historial = historial.filter(c => c.fecha.startsWith(hoy));
+  historial.push(compra);
+  localStorage.setItem("historialCompras", JSON.stringify(historial));
+
+  // 🔼 Esto guarda en Google Sheets
+  fetch("TU_URL_DE_LA_WEB_APP", {
+    method: "POST",
+    body: JSON.stringify(compra),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  .then(res => console.log("✅ Compra enviada a Google Sheets"))
+  .catch(err => console.error("❌ Error al enviar a Sheets:", err));
+}
+
 
     // Limpiar entradas de días anteriores
     const hoy = new Date().toLocaleDateString();

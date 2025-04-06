@@ -748,7 +748,12 @@
     totalBs
   };
 
-  // 🔼 Esto guarda en Google Sheets
+  const hoy = new Date().toLocaleDateString();
+  let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
+  historial = historial.filter(c => c.fecha.startsWith(hoy));
+  historial.push(compra);
+  localStorage.setItem("historialCompras", JSON.stringify(historial));
+
   fetch("https://script.google.com/macros/s/AKfycbzCEoEG2goeX_umMT8_CfOWa56TDXK7M1XTlwcJnohwEaLYOs5ufFbpKVUC2ZmS1q80/exec", {
     method: "POST",
     body: JSON.stringify(compra),
@@ -759,7 +764,6 @@
   .then(res => console.log("✅ Compra enviada a Google Sheets"))
   .catch(err => console.error("❌ Error al enviar a Sheets:", err));
 }
-
 
     // Limpiar entradas de días anteriores
     const hoy = new Date().toLocaleDateString();

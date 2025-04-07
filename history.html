@@ -53,6 +53,7 @@
 <body>
   <h2>Historial de Compras</h2>
   <button onclick="borrarHistorial()" class="no-print" style="margin-bottom: 20px;">🗑️ Borrar Historial</button>
+  <button onclick="descargarHistorialPDF()" class="no-print">📄 Descargar PDF</button>
   <div id="historial-container"></div>
 
   <script>
@@ -129,6 +130,18 @@
       ventana.focus();
       ventana.print();
     }
+    function descargarHistorialPDF() {
+  const historialHTML = document.getElementById('historial-container');
+  const opciones = {
+    margin: 0.5,
+    filename: 'historial_compras.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().from(historialHTML).set(opciones).save();
+}
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>

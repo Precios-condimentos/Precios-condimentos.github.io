@@ -376,6 +376,7 @@
         <p style="text-align: center;">CIUDAD OJEDA, ESTADO ZULIA</p>
         <P style="text-align: center;">ZONA POSTAL 4019</P>
         <p><strong>Fecha y Hora:</strong> <span id="invoice-date"></span></p>
+        <p><strong>Factura N°:</strong> <span id="invoice-number"></span></p>
         <p><strong>Cliente:</strong> Consumidor Final</p>
       
         <table>
@@ -405,6 +406,48 @@
       
 
     <script>
+
+        // Función para obtener el número de factura formateado
+        function obtenerNumeroFacturaFormateado() {
+            const añoActual = new Date().getFullYear();
+            let añoGuardado = localStorage.getItem("añoFactura");
+            let numero = localStorage.getItem("numeroFactura");
+
+            if (!añoGuardado || parseInt(añoGuardado) !== añoActual) {
+                // Nuevo año: reiniciar contador
+                numero = 1;
+                localStorage.setItem("añoFactura", añoActual);
+            } else {
+                // Mismo año: incrementar número
+                numero = parseInt(numero) + 1;
+            }
+
+            localStorage.setItem("numeroFactura", numero);
+
+            const numeroFormateado = String(numero).padStart(4, '0');
+            return `FAC-${añoActual}-${numeroFormateado}`;
+        }
+
+        // Función para llenar los datos y mostrar la factura antes de imprimir
+        function prepararFacturaParaImprimir() {
+            const numeroFactura = obtenerNumeroFacturaFormateado();
+            document.getElementById("invoice-number").textContent = numeroFactura;
+
+            // Asignar la fecha actual
+            const fecha = new Date().toLocaleString();
+            document.getElementById("invoice-date").textContent = fecha;
+
+            // Mostrar el contenedor de la factura
+            document.getElementById("invoice").style.display = 'block';
+        }
+
+        // Función para imprimir la factura
+        function imprimirFactura() {
+            prepararFacturaParaImprimir();
+            window.print(); // Imprimir
+        }
+
+
         let dollarRate = 0;
         let cart = [];
     

@@ -407,45 +407,63 @@
 
     <script>
 
-        // Función para obtener el número de factura formateado
-        function obtenerNumeroFacturaFormateado() {
-            const añoActual = new Date().getFullYear();
-            let añoGuardado = localStorage.getItem("añoFactura");
-            let numero = localStorage.getItem("numeroFactura");
-
-            if (!añoGuardado || parseInt(añoGuardado) !== añoActual) {
-                // Nuevo año: reiniciar contador
-                numero = 1;
-                localStorage.setItem("añoFactura", añoActual);
+        document.addEventListener("DOMContentLoaded", function() {
+            // Verificar si el localStorage está disponible
+            if (typeof(Storage) !== "undefined") {
+                console.log("localStorage está disponible");
             } else {
-                // Mismo año: incrementar número
-                numero = parseInt(numero) + 1;
+                console.log("localStorage NO está disponible");
             }
 
-            localStorage.setItem("numeroFactura", numero);
+            // Función para obtener el número de factura formateado
+            function obtenerNumeroFacturaFormateado() {
+                const añoActual = new Date().getFullYear();
+                let añoGuardado = localStorage.getItem("añoFactura");
+                let numero = localStorage.getItem("numeroFactura");
 
-            const numeroFormateado = String(numero).padStart(4, '0');
-            return `FAC-${añoActual}-${numeroFormateado}`;
-        }
+                // Verificación adicional en consola
+                console.log("Número de factura en localStorage:", numero);
+                console.log("Año guardado en localStorage:", añoGuardado);
 
-        // Función para llenar los datos y mostrar la factura antes de imprimir
-        function prepararFacturaParaImprimir() {
-            const numeroFactura = obtenerNumeroFacturaFormateado();
-            document.getElementById("invoice-number").textContent = numeroFactura;
+                if (!añoGuardado || parseInt(añoGuardado) !== añoActual) {
+                    // Nuevo año: reiniciar contador
+                    numero = 1;
+                    localStorage.setItem("añoFactura", añoActual);
+                } else {
+                    // Mismo año: incrementar número
+                    numero = parseInt(numero) + 1;
+                }
 
-            // Asignar la fecha actual
-            const fecha = new Date().toLocaleString();
-            document.getElementById("invoice-date").textContent = fecha;
+                localStorage.setItem("numeroFactura", numero);
 
-            // Mostrar el contenedor de la factura
-            document.getElementById("invoice").style.display = 'block';
-        }
+                const numeroFormateado = String(numero).padStart(4, '0');
+                console.log("Número de factura formateado:", numeroFormateado); // Verificar en consola
+                return `FAC-${añoActual}-${numeroFormateado}`;
+            }
 
-        // Función para imprimir la factura
-        function imprimirFactura() {
-            prepararFacturaParaImprimir();
-            window.print(); // Imprimir
-        }
+            // Función para llenar los datos y mostrar la factura antes de imprimir
+            function prepararFacturaParaImprimir() {
+                const numeroFactura = obtenerNumeroFacturaFormateado();
+                console.log("Número de factura generado:", numeroFactura);  // Verificar en consola
+
+                // Asegurarse de que el número de factura se agregue a la factura
+                document.getElementById("invoice-number").textContent = numeroFactura;
+
+                // Asignar la fecha actual
+                const fecha = new Date().toLocaleString();
+                document.getElementById("invoice-date").textContent = fecha;
+
+                // Mostrar el contenedor de la factura
+                document.getElementById("invoice").style.display = 'block';
+            }
+
+            // Función para imprimir la factura
+            window.imprimirFactura = function() {
+                console.log("Botón de imprimir presionado");  // Verificación
+                prepararFacturaParaImprimir();
+                window.print(); // Imprimir
+            }
+        });
 
 
         let dollarRate = 0;

@@ -407,6 +407,19 @@
 
     <script>
 
+        
+    function obtenerNumeroFacturaFormateado() {
+    // Obtenemos el último número de factura del localStorage
+    let ultimoNumero = localStorage.getItem("ultimoNumeroFactura") || "0";
+    let nuevoNumero = parseInt(ultimoNumero) + 1;
+
+    // Guardamos el nuevo número
+    localStorage.setItem("ultimoNumeroFactura", nuevoNumero);
+
+    // Formateamos como FACT-00001, FACT-00002, etc.
+    return "FACT-" + nuevoNumero.toString().padStart(5, "0");
+}
+
         document.addEventListener("DOMContentLoaded", function() {
             // Verificar si el localStorage está disponible
             if (typeof(Storage) !== "undefined") {
@@ -869,6 +882,33 @@
                 document.getElementById('confirmBtn').disabled = true;
             }
         }
+
+        function actualizarVistaCarrito() {
+    const cartContainer = document.getElementById("cart");
+    cartContainer.innerHTML = "";
+
+    if (cart.length === 0) {
+        cartContainer.innerHTML = "<tr><td colspan='5'>El carrito está vacío.</td></tr>";
+    } else {
+        cart.forEach((item, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>${item.precioUSD.toFixed(2)}</td>
+                <td>${item.cantidad}</td>
+                <td>${item.totalPriceUSD.toFixed(2)}</td>
+                <td><button onclick="eliminarItemCarrito(${index})">Eliminar</button></td>
+            `;
+            cartContainer.appendChild(row);
+        });
+    }
+
+    const totalUSD = cart.reduce((sum, item) => sum + item.totalPriceUSD, 0);
+    const totalBs = cart.reduce((sum, item) => sum + item.totalPriceBs, 0);
+    document.getElementById("totalUSD").textContent = totalUSD.toFixed(2);
+    document.getElementById("totalBs").textContent = totalBs.toFixed(2);
+}
+
     
         function confirmPurchase() {
     if (cart.length === 0) {
@@ -881,6 +921,11 @@
 
     // Mostrar la fecha en la factura
     document.getElementById("invoice-date").innerText = fechaHora;
+
+        // Obtener y mostrar el número de factura
+    const numeroFactura = obtenerNumeroFacturaFormateado();
+    document.getElementById("invoice-number").textContent = numeroFactura;
+
 
     // Guardar compra en historial
     const compra = {
@@ -903,6 +948,11 @@
     renderInvoice();
     document.getElementById('calculator').style.display = 'none';
     document.getElementById('invoice').style.display = 'block';
+        
+    // Limpiar carrito
+        cart = [];
+    actualizarVistaCarrito(); // Esta función debería redibujar el carrito vacío
+
 }
 
     

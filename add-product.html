@@ -1,121 +1,1153 @@
-// historial.js
 
-// Guardar compra al historial
-function savePurchaseToHistory(cart) {
-    const now = new Date();
-    const dateKey = now.toISOString().split('T')[0]; // "2025-04-04"
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        select, input, button {
+            width: 95%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        #invoice {
+            display: none;
+            margin-top: 20px;
+        }
+        #calculator {
+            display: block;
+        }
+        .invoice-total {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+            text-align: right;
+        }
+        .invoice-button {
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        @media print {
+  @page {
+    size: 80mm auto;
+    margin: 5mm;
+  }
 
-    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
-    if (!stored[dateKey]) {
-        stored[dateKey] = [];
-    }
+  body * {
+    visibility: hidden;
+  }
 
-    stored[dateKey].push({
-        time: time,
-        items: cart,
-    });
+  #invoice, #invoice * {
+    visibility: visible;
+  }
 
-    localStorage.setItem("purchaseHistory", JSON.stringify(stored));
+  #invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
 }
 
-// Mostrar historial en la interfaz
-function showHistory() {
-    const historyDiv = document.getElementById("history");
-    historyDiv.innerHTML = "<h3>Historial de Compras</h3>";
-    const dateKey = new Date().toISOString().split('T')[0];
-    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
-    const purchases = stored[dateKey] || [];
 
-    if (purchases.length === 0) {
-        historyDiv.innerHTML += "<p>No hay compras registradas hoy.</p>";
+    </style>
+</head>
+<body>
+    <div id="calculator" class="container">
+        <h2>Calculadora de Precios</h2>
+        <p id="dollarRate">Cargando tasa del dólar BCV...</p>
+        <label for="category">Categoría:</label>
+        <select id="category" onchange="filterProducts()">
+            <option value="Selecione una categoria">Selecione una categoria</option>
+            <option value="Condimentos semi">Condimentos semi</option>
+            <option value="Condimentos Puros">Condimentos puros</option>
+            <option value="Hierbas e Infusiones">Hierbas e Infusiones</option>
+            <option value="Semillas">Semillas</option>
+            <option value="Maniseria">Maniseria</option>
+            <option value="Turrones">Turrones</option>
+            <option value="Granos">Granos</option>
+            <option value="Químicos">Químicos</option>
+            <option value="Esencias">Esencias</option>
+            <option value="Bolsas">Bolsas</option>
+            <option value="Animales">Animales</option>
+            <option value="Colores">Colores</option>
+            <option value="Repostería">Repostería</option>
+            <option value="Agropecuaria">Agropecuaria</option>
+            <option value="Agropecuaria Mayor">Agropecuaria Mayor</option>
+             <option value="Animales Agropecuaria">Animales Agropecuaria</option>
+        </select>
+        <label for="product">Producto:</label>
+        <select id="product" disabled>
+        <option value="4.54" data-category="Condimentos semi">Aliño semi</option>
+        <option value="4.00" data-category="Condimentos semi">Adobo semi</option>
+        <option value="4.45" data-category="Condimentos semi">Carmencita</option>
+        <option value="4.54" data-category="Condimentos semi">Cubito semi</option>
+        <option value="6.52" data-category="Condimentos semi">Pimienta semi</option>
+        <option value="4.00" data-category="Condimentos semi">Curry semi</option>
+        <option value="4.97" data-category="Condimentos semi">Ajo semi</option>
+        <option value="7.56" data-category="Condimentos semi">Comino semi</option>
+        <option value="4.67" data-category="Condimentos semi">Sabroceador semi</option>
+        <option value="8.80" data-category="Condimentos semi">Orégano Molido</option>
+        <option value="6.80" data-category="Condimentos semi">Orégano Entero</option>
+        <option value="4.97" data-category="Condimentos semi">Combinaditos</option>
+
+        <option value="7.88" data-category="Condimentos Puros">Aliño</option>
+        <option value="7.56" data-category="Condimentos Puros">Cubito</option>
+        <option value="7.00" data-category="Condimentos Puros">Adobo</option>
+        <option value="7.00" data-category="Condimentos Puros">Ajo Mix</option>
+        <option value="11.52" data-category="Condimentos Puros">Ajo Granulado</option>
+        <option value="6.50" data-category="Condimentos Puros">Ajo Puro artesanal</option>
+        <option value="12.00" data-category="Condimentos Puros">Cebolla</option>
+        <option value="11.04" data-category="Condimentos Puros">Cúrcuma</option>
+        <option value="11.04" data-category="Condimentos Puros">Jengibre</option>
+        <option value="9.60" data-category="Condimentos Puros">Paprika Dulce</option>
+        <option value="13.04" data-category="Condimentos Puros">Paprika Picante</option>
+        <option value="12.00" data-category="Condimentos Puros">Paprika Ahumada</option>
+        <option value="15.00" data-category="Condimentos Puros">Comino</option>
+        <option value="11.20" data-category="Condimentos Puros">Curry</option>
+        <option value="25.00" data-category="Condimentos Puros">Pimienta</option>
+        <option value="8.00" data-category="Condimentos Puros">Trifogón</option>
+        <option value="33,83" data-category="Condimentos Puros">7 Especies</option>
+        <option value="5.94" data-category="Condimentos Puros">Salchina</option>
+        <option value="7.00" data-category="Condimentos Puros">Ajo Entero</option>
+     
+
+        <option value="12.00" data-category="Hierbas e Infusiones">Flor de Jamaica</option>
+        <option value="19.04" data-category="Hierbas e Infusiones">Manzanilla</option>
+        <option value="19.00" data-category="Hierbas e Infusiones">Té Verde</option>
+        <option value="14.00" data-category="Hierbas e Infusiones">Hierbabuena</option>
+        <option value="21.00" data-category="Hierbas e Infusiones">Té Negro</option>
+        <option value="10.00" data-category="Hierbas e Infusiones">Sen</option>
+        <option value="13.60" data-category="Hierbas e Infusiones">Tomillo</option>
+        <option value="11.00" data-category="Hierbas e Infusiones">Menta</option>
+        <option value="15.06" data-category="Hierbas e Infusiones">Laurel</option>
+        <option value="14.00" data-category="Hierbas e Infusiones">Romero</option>
+        <option value="13.00" data-category="Hierbas e Infusiones">Albahaca</option>
+        <option value="32.00" data-category="Hierbas e Infusiones">Stevia</option>
+        <option value="44.00" data-category="Hierbas e Infusiones">Clavitos</option>
+        <option value="19.04" data-category="Hierbas e Infusiones">Canela Entera</option>
+        <option value="20.20" data-category="Hierbas e Infusiones">Canela Molida</option>
+        <option value="26.00" data-category="Hierbas e Infusiones">Anís Estrellado</option>
+        <option value="23.04" data-category="Hierbas e Infusiones">Malagueta</option>
+        <option value="16.00" data-category="Hierbas e Infusiones">Perejil</option>
+        <option value="52.00" data-category="Hierbas e Infusiones">Tilo</option>
+        <option value="10.00" data-category="Hierbas e Infusiones">Vinagre de manzana</option>
+        <option value="28.08" data-category="Hierbas e Infusiones">Aceite de coco</option>
+        <option value="9.33" data-category="Hierbas e Infusiones">Aceite de oliva 250ml</option>
+        <option value="18.33" data-category="Hierbas e Infusiones">Aceite de oliva 500ml</option>
+        <option value="33.00" data-category="Hierbas e Infusiones">nuez moscada</option>
+        <option value="1.08" data-category="Hierbas e Infusiones">Panela</option>
+
+
+        <option value="12.56" data-category="Semillas">Chía</option>
+        <option value="11.84" data-category="Semillas">Anís Dulce</option>
+        <option value="4.96" data-category="Semillas">Linaza</option>
+        <option value="3.80" data-category="Semillas">Girasol</option>
+        <option value="20.00" data-category="Semillas">Auyama</option>
+        <option value="4.32" data-category="Semillas">Patilla</option>
+        <option value="7.23" data-category="Semillas">Fenogreco</option>
+        <option value="4.86" data-category="Semillas">Ajonjolí Natural</option>
+        <option value="12.00" data-category="Semillas">Ajonjolí Blanco</option>
+        <option value="16.00" data-category="Semillas">Ajonjolí Negro</option>
+        <option value="13.04" data-category="Semillas">Comino Entero</option>
+        <option value="25.00" data-category="Semillas">Pimienta Negra</option>
+        <option value="40.00" data-category="Semillas">Pimienta Blanca</option>
+        <option value="40.00" data-category="Semillas">Pimienta Roja</option>
+        <option value="11.60" data-category="Semillas">Hinojo</option>
+        <option value="9.44" data-category="Semillas">Quinoa</option>
+        <option value="7.04" data-category="Semillas">Mostaza</option>
+        <option value="13.04" data-category="Semillas">Cilantro</option>
+        <option value="5.55" data-category="Semillas">Cebada</option>
+        <option value="10.26" data-category="Semillas">Aceitunas</option>
+        <option value="9.17" data-category="Semillas">Alcaparras</option>
+        <option value="5.18" data-category="Semillas">Trigo Fino</option>
+        <option value="2.70" data-category="Semillas">Avena</option>
+        <option value="2.70" data-category="Semillas">Afrecho</option>
+        <option value="16.40" data-category="Semillas">Achote</option>
+        <option value="3.00" data-category="Semillas">Sal de Mesa</option>
+        <option value="9.00" data-category="Semillas">Pasas</option>
+        <option value="14.40" data-category="Semillas">Ciruela Pasas</option>
+        <option value="10.00" data-category="Semillas">Sal Rosada</option>
+        <option value="4.00" data-category="Semillas">Sal Marina</option>
+        
+        
+        <option value="6.00" data-category="Maniseria">Frutos secos</option>
+        <option value="5.50" data-category="Maniseria">Frutos secos +1kg</option>
+        <option value="4.80" data-category="Maniseria">Frutos secos +5kg</option>
+        <option value="15.00" data-category="Maniseria">Maíz Tostado</option>
+        <option value="8.60" data-category="Maniseria">Maní Triturado</option>
+        <option value="12.00" data-category="Maniseria">Cocomani</option>
+        <option value="8.40" data-category="Maniseria">Maní Salado Jumbo</option>
+        <option value="5.60" data-category="Maniseria">Maní con Ajonjolí</option>
+        <option value="8.00" data-category="Maniseria">Maní Pimienta Limón</option>
+        <option value="10.60" data-category="Maniseria">Maní con Concha</option>
+        <option value="5.60" data-category="Maniseria">Maní Garrapiñado</option>
+        <option value="7.20" data-category="Maniseria">Maní con Sal</option>
+        <option value="8.56" data-category="Maniseria">Maní sin Sal</option>
+        <option value="11.40" data-category="Maniseria">Maní Japonés y Variantes</option>
+        <option value="27.60" data-category="Maniseria">Almendras</option>
+        <option value="37.56" data-category="Maniseria">Almendras Fileteadas</option>
+        <option value="40.00" data-category="Maniseria">Almendras con Ajonjolí</option>
+        <option value="25.20" data-category="Maniseria">Almendras con Coco</option>
+        <option value="27.60" data-category="Maniseria">Almendras Garrapiñadas</option>
+        <option value="40.00" data-category="Maniseria">Almendras Saladas</option>
+        <option value="44.00" data-category="Maniseria">Avellanas</option>
+        <option value="26.45" data-category="Maniseria">Merey</option>
+        <option value="40.00" data-category="Maniseria">Pistacho</option>
+        <option value="32.60" data-category="Maniseria">Nueces</option>
+
+        <option value="0.42" data-category="Turrones">Blanco con Maní</option>
+        <option value="0.42" data-category="Turrones">Acaramelado con Ajonjolí</option>
+        <option value="0.42" data-category="Turrones">Acaramelado con Maní</option>
+        <option value="0.84" data-category="Turrones">Acaramelado con Maní grande</option>
+        <option value="0.42" data-category="Turrones">Mixto</option>
+        <option value="2.16" data-category="Turrones">Almendras</option>
+        <option value="2.50" data-category="Turrones">Avellanas</option>
+        <option value="2.16" data-category="Turrones">Merey</option>
+        <option value="3.83" data-category="Turrones">Pistacho</option>
+        <option value="2.16" data-category="Turrones">Gourmet</option>
+
+
+        <option value="4.00" data-category="Granos">Caraota Negra</option>
+        <option value="3.02" data-category="Granos">Caraota Roja</option>
+        <option value="3.24" data-category="Granos">Caraota Blanca</option>
+        <option value="3.61" data-category="Granos">Arvejas</option>
+        <option value="4.14" data-category="Granos">Lentejas</option>
+        <option value="3.20" data-category="Granos">Cotufas</option>
+        <option value="4.80" data-category="Granos">Garbanzos</option>
+        <option value="1.62" data-category="Granos">Pico Negro</option>
+
+        <option value="13.56" data-category="Químicos">Benzoato</option>
+        <option value="6.78" data-category="Químicos">Sal de Epson</option>
+        <option value="3.60" data-category="Químicos">Ácido Cítrico</option>
+        <option value="3.87" data-category="Químicos">Azufre</option>
+        <option value="11.52" data-category="Químicos">Ácido Bórico</option>
+        <option value="7.70" data-category="Químicos">Alumbre</option>
+
+        <option value="1.30" data-category="Esencias">JUNIOR</option>
+        <option value="5.60" data-category="Esencias">SABRIMAX, PRODISABOR</option>
+        <option value="3.93" data-category="Esencias">AREQUIPE, LECHE C</option>
+        <option value="3.51" data-category="Esencias">PIÑA</option>
+        <option value="4.80" data-category="Esencias">NATA</option>
+        <option value="3.40" data-category="Esencias">BANANA</option>
+        <option value="3.60" data-category="Esencias">COCO</option>
+        <option value="3.40" data-category="Esencias">NARANJA</option>
+
+        <option value="1.20" data-category="Bolsas">5X9</option>
+        <option value="1.30" data-category="Bolsas">6X11</option>
+        <option value="1.64" data-category="Bolsas">7X11</option>
+        <option value="2.26" data-category="Bolsas">8X13</option>
+        <option value="1.80" data-category="Bolsas">9X15</option>
+        <option value="1.78" data-category="Bolsas">CARTON</option>
+        <option value="0.50" data-category="Bolsas">Pabilo individual</option>
+        <option value="1.00" data-category="Bolsas">Pabilo x 3 unds</option>
+
+        <option value="5.50" data-category="Animales">GATARINA</option>
+        <option value="3.50" data-category="Animales">PERRARINA CACHO</option>
+        <option value="3.00" data-category="Animales">PERRARINA ADULTO</option>
+        <option value="3.21" data-category="Animales">ALPISTE</option>
+        <option value="7.00" data-category="Animales">ARENA</option>
+        <option value="7.50" data-category="Animales">ARENA Calabaza</option>
+        <option value="5.50" data-category="Animales">GATARINA EMPACADA</option>
+
+        <option value="16.00" data-category="Colores">AMARILLO</option>
+        <option value="17.33" data-category="Colores">AMARILLO LIMA</option>
+        <option value="12.00" data-category="Colores">AMARILLO PAELLERO</option>
+        <option value="30.66" data-category="Colores">AZUL</option>
+        <option value="28.66" data-category="Colores">CHOCOLATE</option>
+        <option value="35.33" data-category="Colores">ROJO</option>
+        <option value="26.00" data-category="Colores">ROJO BRILLANTE</option>
+        <option value="35.33" data-category="Colores">ROJO FRAMBUESA</option>
+        <option value="39.33" data-category="Colores">ROSADO</option>
+        <option value="29.33" data-category="Colores">UVA</option>
+        <option value="18.66" data-category="Colores">VERDE</option>
+        <option value="22.00" data-category="Colores">VERDE MANZANA</option>
+
+        <option value="6.00" data-category="Repostería">Nevazúcar</option>
+        <option value="8.44" data-category="Repostería">Arequipe</option>
+        <option value="10,50" data-category="Repostería">Chocomalti</option>
+        <option value="6.48" data-category="Repostería">Lluvia de Chocolate</option>
+        <option value="10.00" data-category="Repostería">Gotas de chocolate</option>
+        <option value="14.40" data-category="Repostería">Maní Cubierto de Chocolate</option>
+        <option value="6.24" data-category="Repostería">Lluvia de Colores</option>
+        <option value="8.86" data-category="Repostería">Grageas</option>
+        <option value="11.76" data-category="Repostería">Cerezas</option>
+        <option value="11.66" data-category="Repostería">Chantilly Líquido</option>
+        <option value="25.02" data-category="Repostería">Chantilly en Polvo</option>
+        <option value="5.46" data-category="Repostería">Maizena</option>
+        <option value="4.90" data-category="Repostería">Polvo de Hornear</option>
+        <option value="22.00" data-category="Repostería">Cacao</option>
+        <option value="13.70" data-category="Repostería">Levadura</option>
+        <option value="12.96" data-category="Repostería">Pudin y Flan</option>
+        <option value="19.04" data-category="Repostería">Gelatina sin Sabor</option>
+        <option value="9.40" data-category="Repostería">Gelatina de Sabor</option>
+        <option value="18.00" data-category="Repostería">Esencia de Vainilla</option>
+        <option value="13.33" data-category="Repostería">Mini dandy</option>
+        <option value="7.20" data-category="Repostería">Fruta Confitada</option>
+        <option value="4.56" data-category="Repostería">Caramelina</option>
+        <option value="3.13" data-category="Repostería">Leche evaporada</option>
+        <option value="20.00" data-category="Repostería">Coco Rallado</option>
+        <option value="14.28" data-category="Repostería">Perlas</option>
+        <option value="19.68" data-category="Repostería">Gramilla</option>
+        <option value="12.00" data-category="Repostería">CMC</option>
+        <option value="3.24" data-category="Repostería">Azúcar Morena</option> 
+
+        <option value="1.00" data-category="Agropecuaria">Maiz para pollo detal</option>  
+        <option value="38.50" data-category="Agropecuaria">Medicado fino y grueso 40Kg</option>  
+        <option value="1.70" data-category="Agropecuaria">Medicado fino y grueso detal</option>  
+        <option value="15.50" data-category="Agropecuaria">Cerdo C casera 20kg</option>
+        <option value="1.20" data-category="Agropecuaria">Cerdo C casera Detal</option>
+        <option value="16.00" data-category="Agropecuaria">pollo C casera 20kg</option>
+        <option value="1.20" data-category="Agropecuaria">pollo C casera Detal</option>
+        <option value="41.50" data-category="Agropecuaria">Pollo engorde 40kg (P2)</option>
+        <option value="1.32" data-category="Agropecuaria">Pollo engorde Detal</option>
+        <option value="34.50" data-category="Agropecuaria">Pollo iniciador 40kg</option>
+        <option value="1.32" data-category="Agropecuaria">Pollo iniciador Detal</option>
+        <option value="21.00" data-category="Agropecuaria">Vaca lechera 35kg</option>
+        <option value="40.50" data-category="Agropecuaria">Ponedora M y E 40kg</option>
+        <option value="1.50" data-category="Agropecuaria">Ponedora M y E Detal</option>
+        <option value="20.50" data-category="Agropecuaria">Usos multiples 35kg</option>
+        <option value="0.85" data-category="Agropecuaria">Usos multiples Detal</option>
+        <option value="11.50" data-category="Agropecuaria">usos multiples 20kg</option>
+        <option value="24.00" data-category="Agropecuaria">Lechera 18% 35KG Proalca</option>
+        <option value="20.50" data-category="Agropecuaria">Multiroca 35Kg</option> 
+        <option value="20.50" data-category="Agropecuaria">Multipollo 35Kg</option> 
+        <option value="19.00" data-category="Agropecuaria">Cerdo patio</option> 
+        <option value="3.00" data-category="Agropecuaria">Bebederos de cerdos</option>
+        <option value="42.50" data-category="Agropecuaria">Iniciador proalca 40kg (P1)</option>
+        <option value="20.50" data-category="Agropecuaria">Convaca multiproposito(N15) 35kg</option>
+        <option value="45.00" data-category="Agropecuaria">Convaca (P2) medicado 40kg</option>
+        <option value="48.00" data-category="Agropecuaria">Convaca (P1) 40kg</option>
+        <option value="33.00" data-category="Agropecuaria">Vaca lechera convaca</option>
+        <option value="45.00" data-category="Agropecuaria">Ponedora convaca 35KG especial 19%</option>
+        <option value="29.00" data-category="Agropecuaria">Ponedora Patio 35kg</option>
+        <option value="20.50" data-category="Agropecuaria">La roca engorde cerdo 35kg</option>
+        <option value="13.50" data-category="Agropecuaria">La roca engorde 20kg</option>
+        <option value="26.00" data-category="Agropecuaria">La roca Lechera 22% 35KG</option>
+        <option value="22.00" data-category="Agropecuaria">La granja Engorde 35KG</option>
+        <option value="22.50" data-category="Agropecuaria">La granja Cerdo</option>
+        <option value="14.00" data-category="Agropecuaria">Harina amarilla 26Kg</option>
+        <option value="14.00" data-category="Agropecuaria">Melaza</option>
+
+        <option value="46.00" data-category="Agropecuaria Mayor">Maiz para pollo saco</option>
+        <option value="36.50" data-category="Agropecuaria Mayor">Medicado fino y grueso 40Kg +10 sacos</option>
+        <option value="15.50" data-category="Agropecuaria Mayor">Cerdo C casera 20kg +10 sacos</option>
+        <option value="15.50" data-category="Agropecuaria Mayor">pollo C casera 20kg +10 sacos</option>
+        <option value="34.50" data-category="Agropecuaria Mayor">Pollo iniciador 40kg +10</option>
+        <option value="41.00" data-category="Agropecuaria">Pollo engorde 40kg (P2) +10sacos</option>
+        <option value="20.50" data-category="Agropecuaria Mayor">Vaca lechera 35kg +10sacos</option>
+        <option value="40.00" data-category="Agropecuaria Mayor">Ponedora M y E 40kg +10</option>
+        <option value="20.00" data-category="Agropecuaria Mayor">Usos multiples 35kg +10 sacos</option>
+        <option value="11.00" data-category="Agropecuaria Mayor">usos multiples 20kg +10</option>
+        <option value="23.50" data-category="Agropecuaria">Lechera 18% 35kg proalca +10sacos</option>
+        <option value="42.00" data-category="Agropecuaria Mayor">Iniciador proalca 40kg (P1) +10</option>
+        <option value="18.50" data-category="Agropecuaria">Convaca multiproposito(N15) 35kg +10</option>
+        <option value="39.00" data-category="Agropecuaria">Convaca (P2) medicado 40kg +10</option>
+        <option value="40.00" data-category="Agropecuaria">Convaca (P1) 40kg +10</option>
+        <option value="25.00" data-category="Agropecuaria">Ponedora Patio 35kg +10</option>
+        <option value="19.50" data-category="Agropecuaria">La roca engorde cerdo 35kg +10</option>
+        <option value="13.00" data-category="Agropecuaria">La roca engorde 20kg +10</option>
+
+        <option value="35.00" data-category="Animales Agropecuaria">Mi ringo 8kg</option>
+        <option value="5.50" data-category="Animales Agropecuaria">Mi ringo Detal</option>
+        <option value="57.00" data-category="Animales Agropecuaria">Mi ringo 15kg</option>
+        <option value="63.00" data-category="Animales Agropecuaria">Ringo adulto 30kg</option>
+        <option value="3.00" data-category="Animales Agropecuaria">Ringo adulto Detal</option>
+        <option value="71.20" data-category="Animales Agropecuaria">Ringo cachorro 30kg</option>
+        <option value="3.50" data-category="Animales Agropecuaria">Ringo cachorro Detal</option>
+        <option value="60.00" data-category="Animales Agropecuaria">filpo perro 30kg</option>
+        <option value="2.30" data-category="Animales Agropecuaria">filpo perro Detal</option>
+        <option value="35.00" data-category="Animales Agropecuaria">filpo Gato 8kg</option>
+        <option value="5.50" data-category="Animales Agropecuaria">filpo Gato Detal</option>
+        <option value="60.00" data-category="Animales Agropecuaria">Gatsy 16kg</option>
+        <option value="5.20" data-category="Animales Agropecuaria">Gatsy Detal</option>
+        <option value="84.00" data-category="Animales Agropecuaria">Dog chow 20kg</option>
+        <option value="5.75" data-category="Animales Agropecuaria">Dog chow adulto Detal</option>
+        <option value="6.32" data-category="Animales Agropecuaria">Dog chow cachorro Detal</option>
+        <option value="60.00" data-category="Animales Agropecuaria">Super can 30kg</option>
+        <option value="2.30" data-category="Animales Agropecuaria">Super can Detal</option>
+        <option value="100.00" data-category="Animales Agropecuaria">Cipacat 30kg</option>
+        <option value="5.50" data-category="Animales Agropecuaria">Cipacat Detal</option>
+        <option value="5.50" data-category="Animales Agropecuaria">Mi ringo paq</option>
+        <option value="2.50" data-category="Animales Agropecuaria">Champ´s perrarina</option>
+        <option value="33.00" data-category="Animales Agropecuaria">Champ´s perrarina 20kg</option>
+        </select>
+        <!-- Mostrar precio unitario actual -->
+        <p>Precio Unitario (por kg):</p>
+        <p>$<span id="priceUSD">0.00</span> / Bs <span id="priceBS">0.00</span></p>
+        <label for="quantity">Cantidad (gramos):</label>
+        <input type="number" id="quantity" placeholder="Ingrese gramos" min="1">
+        <button onclick="addToCart()">Agregar al Carrito</button>
+        <h3>Carrito de Compras</h3>
+        <div id="cart"></div>
+        <p><strong>Total: $<span id="totalUSD">0.00</span> / Bs <span id="totalBs">0.00</span></strong></p>
+        <button onclick="confirmPurchase()" id="confirmBtn" disabled>Confirmar Compra</button>
+        <button onclick="window.open('history.html', '_blank')" class="no-print">Ver Historial de Compras</button>
+
+    </div>
+
+    <div id="invoice" class="container" style="display: none;">
+        <h2 style="text-align: center;">Comercializadora CJB</h2>
+        <p style="text-align: center;"> RIF J410197102</p>
+        <p style="text-align: center;"> CALLE VENEZUELA</p>
+        <p style="text-align: center;">CIUDAD OJEDA, ESTADO ZULIA</p>
+        <P style="text-align: center;">ZONA POSTAL 4019</P>
+        <p><strong>Fecha y Hora:</strong> <span id="invoice-date"></span></p>
+        <p><strong>Factura N°:</strong> <span id="invoice-number"></span></p>
+        <p><strong>Cliente:</strong> Consumidor Final</p>
+      
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>$/kg</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="invoice-items">
+            <!-- Se llena con JS -->
+          </tbody>
+        </table>
+      
+        <div class="invoice-total">
+          Total a Pagar: $<span id="invoice-total-usd">0.00</span> / Bs <span id="invoice-total-bs">0.00</span>
+        </div>
+      
+        <button onclick="printInvoice()" class="no-print">🖨️ Imprimir Factura</button>
+        <button onclick="goBack()" class="no-print">Volver a la Calculadora</button>
+      </div>
+     
+
+
+      
+
+    <script>
+
+        
+    function obtenerNumeroFacturaFormateado() {
+    // Obtenemos el último número de factura del localStorage
+    let ultimoNumero = localStorage.getItem("ultimoNumeroFactura") || "0";
+    let nuevoNumero = parseInt(ultimoNumero) + 1;
+
+    // Guardamos el nuevo número
+    localStorage.setItem("ultimoNumeroFactura", nuevoNumero);
+
+    // Formateamos como FACT-00001, FACT-00002, etc.
+    return "FACT-" + nuevoNumero.toString().padStart(5, "0");
+}
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Verificar si el localStorage está disponible
+            if (typeof(Storage) !== "undefined") {
+                console.log("localStorage está disponible");
+            } else {
+                console.log("localStorage NO está disponible");
+            }
+
+            // Función para obtener el número de factura formateado
+            function obtenerNumeroFacturaFormateado() {
+                const añoActual = new Date().getFullYear();
+                let añoGuardado = localStorage.getItem("añoFactura");
+                let numero = localStorage.getItem("numeroFactura");
+
+                // Verificación adicional en consola
+                console.log("Número de factura en localStorage:", numero);
+                console.log("Año guardado en localStorage:", añoGuardado);
+
+                if (!añoGuardado || parseInt(añoGuardado) !== añoActual) {
+                    // Nuevo año: reiniciar contador
+                    numero = 1;
+                    localStorage.setItem("añoFactura", añoActual);
+                } else {
+                    // Mismo año: incrementar número
+                    numero = parseInt(numero) + 1;
+                }
+
+                localStorage.setItem("numeroFactura", numero);
+
+                const numeroFormateado = String(numero).padStart(4, '0');
+                console.log("Número de factura formateado:", numeroFormateado); // Verificar en consola
+                return `FAC-${añoActual}-${numeroFormateado}`;
+            }
+
+            // Función para llenar los datos y mostrar la factura antes de imprimir
+            function prepararFacturaParaImprimir() {
+                const numeroFactura = obtenerNumeroFacturaFormateado();
+                console.log("Número de factura generado:", numeroFactura);  // Verificar en consola
+
+                // Asegurarse de que el número de factura se agregue a la factura
+                document.getElementById("invoice-number").textContent = numeroFactura;
+
+                // Asignar la fecha actual
+                const fecha = new Date().toLocaleString();
+                document.getElementById("invoice-date").textContent = fecha;
+
+                // Mostrar el contenedor de la factura
+                document.getElementById("invoice").style.display = 'block';
+            }
+
+            // Función para imprimir la factura
+            window.imprimirFactura = function() {
+                console.log("Botón de imprimir presionado");  // Verificación
+                prepararFacturaParaImprimir();
+                window.print(); // Imprimir
+            }
+        });
+
+
+        let dollarRate = 0;
+        let cart = [];
+    
+        const products = {
+                "Condimentos semi": [
+                    { name: "Aliño semi", price_usd_kg: 4.54 },
+                    { name: "Adobo semi", price_usd_kg: 4.00 },
+                    { name: "Carmencita", price_usd_kg: 4.45 },
+                    { name: "Cubito semi", price_usd_kg: 4.54 },
+                    { name: "Pimienta semi", price_usd_kg: 6.52 },
+                    { name: "Curry semi", price_usd_kg: 4.00 },
+                    { name: "Ajo semi", price_usd_kg: 4.97 },
+                    { name: "Comino semi", price_usd_kg: 7.56 },
+                    { name: "Sabroceador semi", price_usd_kg: 4.67 },
+                    { name: "Orégano Molido", price_usd_kg: 8.80 },
+                    { name: "Orégano Entero", price_usd_kg: 6.80 },
+                    { name: "Combinaditos", price_usd_kg: 4.97 }
+                ],
+                "Condimentos Puros": [
+                    { name: "Aliño puro", price_usd_kg: 7.88 },
+                    { name: "Cubito puro", price_usd_kg: 7.56 },
+                    { name: "Adobo puro", price_usd_kg: 7.00 },
+                    { name: "Ajo Mix", price_usd_kg: 7.00 },
+                    { name: "Ajo Granulado", price_usd_kg: 11.52 },
+                    { name: "Ajo Puro artesanal", price_usd_kg: 6.50 },
+                    { name: "Cebolla", price_usd_kg: 12.00 },
+                    { name: "Cúrcuma", price_usd_kg: 11.04 },
+                    { name: "Jengibre", price_usd_kg: 11.04 },
+                    { name: "Paprika Dulce", price_usd_kg: 9.60 },
+                    { name: "Paprika Picante", price_usd_kg: 13.04 },
+                    { name: "Paprika Ahumada", price_usd_kg: 12.00 },
+                    { name: "Comino puro", price_usd_kg: 15.00},
+                    { name: "Curry puro", price_usd_kg: 11.20 },
+                    { name: "Pimienta pura", price_usd_kg: 25.00 },
+                    { name: "Trifogón", price_usd_kg: 8.00 },
+                    { name: "7 Especies", price_usd_kg: 33.83 },
+                    { name: "Salchina", price_usd_kg: 5.94 },
+                    { name: "Ajo Entero", price_usd_kg: 7.00}
+                ],
+                "Hierbas e Infusiones": [
+                    { name: "Flor de Jamaica", price_usd_kg: 12.00 },
+                    { name: "Manzanilla", price_usd_kg: 19.04 },
+                    { name: "Té Verde", price_usd_kg: 19.00 },
+                    { name: "Hierbabuena", price_usd_kg: 14.00 },
+                    { name: "Té Negro", price_usd_kg: 21.00 },
+                    { name: "Sen", price_usd_kg: 10.00 },
+                    { name: "Tomillo", price_usd_kg: 13.60 },
+                    { name: "Menta", price_usd_kg: 11.00 },
+                    { name: "Laurel", price_usd_kg: 15.06 },
+                    { name: "Romero", price_usd_kg: 14.00 },
+                    { name: "Albahaca", price_usd_kg: 13.00 },
+                    { name: "Stevia", price_usd_kg: 32.00 },
+                    { name: "Clavitos", price_usd_kg: 44.00 },
+                    { name: "Canela Entera", price_usd_kg: 19.04 },
+                    { name: "Canela Molida", price_usd_kg: 20.20 },
+                    { name: "Anís Estrellado", price_usd_kg: 26.00 },
+                    { name: "Malagueta", price_usd_kg: 23.04 },
+                    { name: "Perejil", price_usd_kg: 16.00 },
+                    { name: "Tilo", price_usd_kg: 52.00 },
+                    { name: "Vinagre de manzana", price_usd_kg: 10.00 },
+                    { name: "Aceite de coco", price_usd_kg: 28.08 },
+                    { name: "Aceite de oliva 250ml", price_usd_kg: 9.33 },
+                    { name: "Aceite de oliva 500ml", price_usd_kg: 18.33 },
+                    { name: "Nuez moscada", price_usd_kg: 33.00 },
+                    { name: "Panela", price_usd_kg: 1.08 }
+                ],
+                "Semillas": [
+                    { name: "Chía", price_usd_kg: 12.56 },
+                    { name: "Anís Dulce", price_usd_kg: 11.84 },
+                    { name: "Linaza", price_usd_kg: 4.96 },
+                    { name: "Girasol", price_usd_kg: 3.80 },
+                    { name: "Auyama", price_usd_kg: 20.00 },
+                    { name: "Patilla", price_usd_kg: 4.32 },
+                    { name: "Fenogreco", price_usd_kg: 7.23 },
+                    { name: "Ajonjolí Natural", price_usd_kg: 4.86 },
+                    { name: "Ajonjolí Blanco", price_usd_kg: 12.00 },
+                    { name: "Ajonjolí Negro", price_usd_kg: 16.00 },
+                    { name: "Comino Entero", price_usd_kg: 13.04 },
+                    { name: "Pimienta Negra Entera", price_usd_kg: 25.00 },
+                    { name: "Pimienta Blanca Entera", price_usd_kg: 40.00 },
+                    { name: "Pimienta Roja Entera", price_usd_kg: 40.00 },
+                    { name: "Hinojo", price_usd_kg: 11.60 },
+                    { name: "Quinoa", price_usd_kg: 9.44 },
+                    { name: "Mostaza", price_usd_kg: 7.04 },
+                    { name: "Cilantro Semilla", price_usd_kg: 13.04 },
+                    { name: "Cebada", price_usd_kg: 5.55 },
+                    { name: "Aceitunas", price_usd_kg: 10.26 },
+                    { name: "Alcaparras", price_usd_kg: 9.17 },
+                    { name: "Trigo Fino", price_usd_kg: 5.18 },
+                    { name: "Avena", price_usd_kg: 2.70 },
+                    { name: "Afrecho", price_usd_kg: 2.70 },
+                    { name: "Achote", price_usd_kg:16.40 },
+                    { name: "Sal de Mesa", price_usd_kg: 3.00 },
+                    { name: "Pasas", price_usd_kg: 9.00 },
+                    { name: "Ciruela Pasas", price_usd_kg: 14.60 },
+                    { name: "Sal Rosada", price_usd_kg: 10.00 },
+                    { name: "Sal Marina", price_usd_kg: 4.00 }
+                ],
+                "Maniseria": [
+                    { name: "Frutos secos", price_usd_kg: 6.00 },
+                    { name: "Frutos secos +1kg", price_usd_kg: 5.50 },
+                    { name: "Frutos secos +5kg", price_usd_kg: 4.80 },
+                    { name: "Maíz Tostado", price_usd_kg: 15.00 },
+                    { name: "Maní Triturado", price_usd_kg: 8.56 },
+                    { name: "Cocomani", price_usd_kg: 12.00 },
+                    { name: "Maní Salado Jumbo", price_usd_kg: 8.40 },
+                    { name: "Maní con Ajonjolí", price_usd_kg: 5.60 },
+                    { name: "Maní Pimienta Limón", price_usd_kg: 8.00 },
+                    { name: "Maní con Concha", price_usd_kg: 10.60 },
+                    { name: "Maní Garrapiñado", price_usd_kg: 5.60},
+                    { name: "Maní con Sal", price_usd_kg: 7.20},
+                    { name: "Maní sin Sal", price_usd_kg: 8.56 },
+                    { name: "Maní Japonés y Variantes", price_usd_kg: 11.40 },
+                    { name: "Almendras", price_usd_kg: 27.60 },
+                    { name: "Almendras Fileteadas", price_usd_kg: 37.56 },
+                    { name: "Almendras con Ajonjolí", price_usd_kg: 30.00 },
+                    { name: "Almendras con Coco", price_usd_kg: 25.20 },
+                    { name: "Almendras Garrapiñadas", price_usd_kg: 27.60 },
+                    { name: "Almendras Saladas", price_usd_kg: 40.00 },
+                    { name: "Avellanas", price_usd_kg: 44.00 },
+                    { name: "Merey", price_usd_kg: 26.45 },
+                    { name: "Pistacho", price_usd_kg: 40.00 },
+                    { name: "Nueces", price_usd_kg: 32.60 }
+                ],
+                "Turrones": [
+                    { name: "Blanco con Maní (unidad)", price_usd_kg: 0.42 },
+                    { name: "Acaramelado con Ajonjolí (unidad)", price_usd_kg: 0.42 },
+                    { name: "Acaramelado con Maní (unidad)", price_usd_kg: 0.42 },
+                    { name: "Acaramelado con Maní Grande (unidad)", price_usd_kg: 0.84 },
+                    { name: "Mixto (unidad)", price_usd_kg: 0.42 },
+                    { name: "Turrón de Almendras", price_usd_kg: 2.16 },
+                    { name: "Turrón de Avellanas", price_usd_kg: 2.50 },
+                    { name: "Turrón de Merey", price_usd_kg: 2.16 },
+                    { name: "Turrón de Pistacho", price_usd_kg: 3.83 },
+                    { name: "Turrón Gourmet", price_usd_kg: 2.16}
+                ],
+                "Granos": [
+                    { name: "Caraota Negra", price_usd_kg: 4.00 },
+                    { name: "Caraota Roja", price_usd_kg: 3.02 },
+                    { name: "Caraota Blanca", price_usd_kg: 3.24 },
+                    { name: "Arvejas", price_usd_kg: 3.61 },
+                    { name: "Lentejas", price_usd_kg: 4.14 },
+                    { name: "Cotufas", price_usd_kg: 3.20 },
+                    { name: "Garbanzos", price_usd_kg: 4.80 },
+                    { name: "Pico Negro", price_usd_kg: 1.62 }
+                ],
+                "Químicos": [
+                    { name: "Benzoato de Sodio", price_usd_kg: 13.56 },
+                    { name: "Sal de Epson", price_usd_kg: 6.78 },
+                    { name: "Ácido Cítrico", price_usd_kg: 3.60 },
+                    { name: "Azufre", price_usd_kg: 3.87 },
+                    { name: "Ácido Bórico", price_usd_kg: 11.52 },
+                    { name: "Alumbre", price_usd_kg: 7.70 }
+                ],
+                "Esencias": [
+                    { name: "Esencia JUNIOR", price_usd_kg: 1.30 },
+                    { name: "Esencia SABRIMAX", price_usd_kg: 5.60 },
+                    { name: "Esencia PRODISABOR", price_usd_kg: 5.60 },
+                    { name: "Esencia Arequipe", price_usd_kg: 3.93 },
+                    { name: "Esencia Leche Condensada", price_usd_kg: 3.93 },
+                    { name: "Esencia Piña", price_usd_kg: 3.51 },
+                    { name: "Esencia Nata", price_usd_kg: 4.80 },
+                    { name: "Esencia Banana", price_usd_kg: 3.40 },
+                    { name: "Esencia Coco", price_usd_kg: 3.60 },
+                    { name: "Esencia Naranja", price_usd_kg: 3.40 }
+                ],
+                "Bolsas": [
+                    { name: "Bolsa 5x9", price_usd_kg: 1.20 },
+                    { name: "Bolsa 6x11", price_usd_kg: 1.30 },
+                    { name: "Bolsa 7x11", price_usd_kg: 1.64 },
+                    { name: "Bolsa 8x13", price_usd_kg: 2.26 },
+                    { name: "Bolsa 9x15", price_usd_kg: 1.80 },
+                    { name: "Cartón", price_usd_kg: 1.78 },
+                    { name: "Pabilo individual", price_usd_kg: 0.50 },
+                    { name: "Pabilo x 3 unds", price_usd_kg: 1.00 }
+                ],
+                "Animales": [
+                    { name: "Gatarina", price_usd_kg: 5.50 },
+                    { name: "Perrarina Cachorro", price_usd_kg: 3.50 },
+                    { name: "Perrarina Adulto", price_usd_kg: 3.00 },
+                    { name: "Alpiste", price_usd_kg: 3.21 },
+                    { name: "Arena para Gatos", price_usd_kg: 7.00 },
+                    { name: "Arena Calabaza", price_usd_kg: 7.50 },
+                    { name: "Gatarina Empacada", price_usd_kg: 5.50 }
+                ],
+                "Colores": [
+                    { name: "Color Amarillo", price_usd_kg: 16.00 },
+                    { name: "Color Amarillo Lima", price_usd_kg: 17.33 },
+                    { name: "Color Amarillo Paellero", price_usd_kg: 12.00 },
+                    { name: "Color Azul", price_usd_kg: 30.66 },
+                    { name: "Color Chocolate", price_usd_kg: 28.66 },
+                    {name: "Color Rojo", price_usd_kg: 35.33 },
+                    {name: "Color Rojo Brillante", price_usd_kg: 26.00 },
+                    {name: "Color Rojo Frambuesa", price_usd_kg: 35.33 },
+                    {name: "Color Rosado", price_usd_kg: 39.33 },
+                    {name: "Color Uva", price_usd_kg: 29.33},
+                    {name: "Color Verde", price_usd_kg: 18.66 },
+                    {name: "Color Verde Manzana", price_usd_kg: 22.00 }
+                    ],
+                "Repostería": [
+                    { name: "Nevazúcar", price_usd_kg: 6.00 },
+                        { name: "Arequipe", price_usd_kg: 8.44 },
+                        { name: "Chocomalti", price_usd_kg: 10.50 },
+                        { name: "Lluvia de Chocolate", price_usd_kg: 6.48 },
+                        { name: "Gotas de Chocolate", price_usd_kg: 10.00 },
+                        { name: "Maní Cubierto de Chocolate", price_usd_kg: 14.40 },
+                        { name: "Lluvia de Colores", price_usd_kg: 6.24 },
+                        { name: "Grageas", price_usd_kg: 8.86 },
+                        { name: "Cerezas", price_usd_kg: 11.76 },
+                        { name: "Chantilly Líquido", price_usd_kg: 11.66 },
+                        { name: "Chantilly en Polvo", price_usd_kg: 25.02 },
+                        { name: "Maizena", price_usd_kg: 5.46 },
+                        { name: "Polvo de Hornear", price_usd_kg: 4.90 },
+                        { name: "Cacao", price_usd_kg: 22.00 },
+                        { name: "Levadura", price_usd_kg: 13.70 },
+                        { name: "Pudin y Flan", price_usd_kg: 12.96 },
+                        { name: "Gelatina sin Sabor", price_usd_kg: 19.04 },
+                        { name: "Gelatina de Sabor", price_usd_kg: 9.40},
+                        { name: "Esencia de Vainilla", price_usd_kg: 18.00 },
+                        { name: "Mini dandy", price_usd_kg: 13.33},
+                        { name: "Fruta Confitada", price_usd_kg: 7.20 },
+                        { name: "Caramelina", price_usd_kg: 4.56 },
+                        { name: "Leche evaporada", price_usd_kg: 3.13 },
+                        { name: "Coco Rallado", price_usd_kg: 20.00},
+                        { name: "Perlas", price_usd_kg: 14.28 },
+                        { name: "Gramilla", price_usd_kg: 19.68 },
+                        { name: "CMC", price_usd_kg: 12.00},
+                        { name: "Azúcar Morena", price_usd_kg: 3.24 }
+                        ],
+
+                 "Agropecuaria": [
+                         { name: "Maiz para pollo detal", price_usd_kg: 1.00 },
+                         { name: "Medicado fino y grueso 40Kg", price_usd_kg: 38.50 },
+                         { name: "Medicado fino y grueso Detal", price_usd_kg: 1.70 },
+                         { name: "Cerdo C casera 20kg", price_usd_kg: 15.50 },
+                         { name: "Cerdo C casera Detal", price_usd_kg: 1.20 },
+                         { name: "pollo C casera 20kg", price_usd_kg: 16.00 },
+                         { name: "pollo C casera Detal", price_usd_kg: 1.20 },
+                         { name: "Pollo engorde 40kg", price_usd_kg: 41.50 },
+                         { name: "Pollo engorde Detal", price_usd_kg: 1.32 },
+                         { name: "Pollo iniciador 40kg", price_usd_kg: 42.50 },
+                         { name: "Pollo iniciador Detal", price_usd_kg: 1.32 },
+                         { name: "Vaca lechera 35kg", price_usd_kg: 24.00 },
+                         { name: "Ponedora M y E 40kg", price_usd_kg: 40.50 },
+                         { name: "Ponedora M y E Detal", price_usd_kg: 1.50 },
+                         { name: "Usos multiples 35kg", price_usd_kg: 20.50 },
+                         { name: "Usos multiples Detal", price_usd_kg: 0.85 },
+                         { name: "usos multiples 20kg", price_usd_kg: 11.50 },
+                         { name: "Lechera 18% 35KG Proalca", price_usd_kg: 24.50},
+                         { name: "Multiroca", price_usd_kg:20.50},
+                         { name: "Multipollo", price_usd_kg: 20.50},
+                         { name: "Cerdo Patio", price_usd_kg: 19.00},
+                         { name: "Bebedero de cerdos", price_usd_kg: 3.00},
+                         { name: "Iniciador proalca 40kg", price_usd_kg: 39.90},
+                         { name: "Convaca multiproposito (N15) 35kg", price_usd_kg: 20.50},
+                         { name: "Convaca (P2) medicado 40kg", price_usd_kg: 45.00},
+                         { name: "Convaca (P1) 40kg", price_usd_kg: 48.00},
+                         { name: "Convaca vaca lechera", price_usd_kg: 33.00},
+                         { name: "Convaca ponedora especial 19%", price_usd_kg: 45.00},
+                         { name: "Ponedora Patio 35kg", price_usd_kg: 29.00},
+                         { name: "La roca engorde cerdo 35kg", price_usd_kg: 20.50},
+                         { name: "La roca engorde 20kg", price_usd_kg: 13.50},
+                         { name: "La roca lechera 22% 35kg", price_usd_kg: 26.00},
+                         { name: "La granja engorde 35kg", price_usd_kg: 22.00},
+                         { name: "La granja cerdo", price_usd_kg: 22.50},
+                         { name: "Melaza", price_usd_kg: 14.00}
+                    ],
+
+             "Agropecuaria Mayor": [
+                    { name: "Maiz para pollo saco", price_usd_kg: 46.00 }, 
+                    { name: "Medicado fino y grueso 40Kg +10 sacos", price_usd_kg: 36.50 },  
+                    { name: "Cerdo C casera 20kg +10 sacos", price_usd_kg: 15.50},  
+                    { name: "pollo C casera 20kg +10 sacos", price_usd_kg: 15.50 },  
+                    { name: "Pollo iniciador 40kg +10", price_usd_kg: 42.00 },  
+                     { name: "Pollo engorde 40kg +10", price_usd_kg: 41.00 },
+                    { name: "Vaca lechera 35kg +10sacos", price_usd_kg: 23.50 },  
+                    { name: "Ponedora M y E 40kg +10", price_usd_kg: 40.00 },  
+                    { name: "Usos multiples 35kg +10 sacos", price_usd_kg: 20.00 }, 
+                    { name: "usos multiples 20kg +10", price_usd_kg: 11.00 },
+                    { name: "Lechera 18% 35KG Proalca +10", price_usd_kg: 24.00},
+                    { name: "Iniciador proalca 40kg +10", price_usd_kg: 39.00},
+                    { name: "Convaca multiproposito (N15) 35kg +10", price_usd_kg: 18.00},
+                    { name: "Convaca (P2) medicado 40kg +10", price_usd_kg: 39.00},
+                    { name: "Convaca (P1) 40kg +10", price_usd_kg: 40.00},
+                    { name: "Ponedora Patio 35kg +10", price_usd_kg: 25.00},
+                    { name: "La roca engorde cerdo 35kg +10", price_usd_kg: 19.50},
+                    { name: "La roca engorde 20kg +10", price_usd_kg: 13.00}
+                       ],
+             "Animales Agropecuaria": [
+                    { name: "Mi ringo 8kg", price_usd_kg: 35.00 }, 
+                     { name: "Mi ringo Detal", price_usd_kg: 5.50 },  
+                     { name: "Mi ringo 15kg", price_usd_kg: 57.00},  
+                     { name: "Ringo adulto 30kg", price_usd_kg: 63.00 },  
+                     { name: "Ringo adulto Detal", price_usd_kg: 3.00 },  
+                     { name: "Ringo cachorro 30kg", price_usd_kg: 71.20 },  
+                     { name: "Ringo cachorro Detal", price_usd_kg: 3.50 },  
+                     { name: "filpo perro 30kg", price_usd_kg: 60.00 }, 
+                      { name: "filpo perro Detal", price_usd_kg: 3.00},
+                     { name: "filpo Gato 8Kg", price_usd_kg: 35.00},
+                     { name: "filpo Gato Detal", price_usd_kg: 5.50},
+                     { name: "Gatsy 16Kg", price_usd_kg: 60.00},
+                     { name: "Gatsy Detal", price_usd_kg: 5.50},
+                     { name: "Dog chow 20Kg", price_usd_kg: 84.00},
+                     { name: "Dog chow adulto detal", price_usd_kg: 5.75},
+                     { name: "Dog chow cachorro detal", price_usd_kg: 6.32},
+                     { name: "Super can 30Kg", price_usd_kg: 60.00},
+                     { name: "Super can detal", price_usd_kg: 2.30},
+                     { name: "Cipacat 30Kg", price_usd_kg: 100.00},
+                     { name: "Cipacat Detal", price_usd_kg: 5.50},
+                     { name: "Mi ringo paq", price_usd_kg: 5.50},
+                     { name: "Champ´s perrarina", price_usd_kg: 2.50},
+                     { name: "Champ´s perrarina 20Kg", price_usd_kg: 33.00}
+                       ],
+            };
+    
+        async function fetchDollarRate() {
+            try {
+                const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const data = await response.json();
+                if (data && data.rates && data.rates.VES) {
+                    dollarRate = data.rates.VES;
+                    document.getElementById('dollarRate').innerText = `Tasa del dólar BCV: ${dollarRate.toFixed(2)} Bs.`;
+                } else {
+                    document.getElementById('dollarRate').innerText = "Error al obtener la tasa del dólar.";
+                }
+            } catch (error) {
+                document.getElementById('dollarRate').innerText = "Error al cargar la tasa del dólar.";
+            }
+        }
+    
+        function filterProducts() {
+            const categorySelect = document.getElementById('category');
+            const productSelect = document.getElementById('product');
+            const selectedCategory = categorySelect.value;
+    
+            productSelect.innerHTML = '<option value="">Seleccionar Producto</option>';
+            productSelect.disabled = true;
+    
+            if (selectedCategory && products[selectedCategory]) {
+                products[selectedCategory].forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify(product);
+                    option.textContent = product.name;
+                    productSelect.appendChild(option);
+                });
+                productSelect.disabled = false;
+            }
+        }
+    
+        function calculatePrice(product, quantity) {
+            let pricePerKg = product.price_usd_kg;
+            let gramsNumber = parseFloat(quantity);
+    
+            if (gramsNumber < 250) {
+                pricePerKg *= 1.6; // Aumenta un 60%
+            }
+    
+            const priceInUSD = (pricePerKg * gramsNumber) / 1000;
+            const priceInBs = priceInUSD * dollarRate;
+    
+            return {
+                usd: priceInUSD.toFixed(2),
+                bs: priceInBs.toFixed(2)
+            };
+        }
+    
+        document.addEventListener('DOMContentLoaded', function () {
+            const quantityInput = document.getElementById('quantity');
+            const productSelect = document.getElementById('product');
+    
+            function updateDisplayedPrice() {
+                const selectedProductStr = productSelect.value;
+                const grams = quantityInput.value;
+    
+                if (!selectedProductStr || !grams) return;
+    
+                const selectedProduct = JSON.parse(selectedProductStr);
+                const finalPrice = calculatePrice(selectedProduct, grams);
+    
+                document.getElementById('priceUSD').innerText = `USD: ${finalPrice.usd}`;
+                document.getElementById('priceBS').innerText = `Bs: ${finalPrice.bs}`;
+            }
+    
+            quantityInput.addEventListener('input', updateDisplayedPrice);
+            productSelect.addEventListener('change', updateDisplayedPrice);
+        });
+    
+        function addToCart() {
+            const productSelect = document.getElementById('product');
+            const quantityInput = document.getElementById('quantity');
+            const selectedProductJson = productSelect.value;
+            const quantity = parseFloat(quantityInput.value);
+    
+            if (selectedProductJson && quantity > 0) {
+                const selectedProduct = JSON.parse(selectedProductJson);
+                let pricePerKg = selectedProduct.price_usd_kg;
+    
+                if (quantity < 250) {
+                    pricePerKg *= 1.6;
+                }
+    
+                const totalPriceUSD = (pricePerKg * quantity) / 1000;
+                const totalPriceBs = totalPriceUSD * dollarRate;
+    
+                cart.push({
+                    name: selectedProduct.name,
+                    quantity: quantity,
+                    price_usd_kg: selectedProduct.price_usd_kg,
+                    totalPriceUSD: totalPriceUSD,
+                    totalPriceBs: totalPriceBs
+                });
+    
+                updateCartDisplay();
+                quantityInput.value = '';
+                document.getElementById('priceUSD').innerText = 'USD: 0';
+                document.getElementById('priceBS').innerText = 'Bs: 0';
+                document.getElementById('confirmBtn').disabled = false;
+            } else {
+                alert("Por favor, seleccione un producto e ingrese una cantidad válida.");
+            }
+        }
+    
+        function updateCartDisplay() {
+            const cartDiv = document.getElementById('cart');
+            const totalUSDElement = document.getElementById('totalUSD');
+            const totalBsElement = document.getElementById('totalBs');
+            let cartHTML = '';
+            let totalUSD = 0;
+            let totalBs = 0;
+    
+            cart.forEach((item, index) => {
+                cartHTML += `
+                    <div class="cart-item">
+                        <span>${item.name} (${item.quantity}g)</span>
+                        <span>$${item.totalPriceUSD.toFixed(2)} / Bs ${item.totalPriceBs.toFixed(2)}</span>
+                        <button onclick="removeFromCart(${index})">Eliminar</button>
+                    </div>
+                `;
+                totalUSD += item.totalPriceUSD;
+                totalBs += item.totalPriceBs;
+            });
+    
+            cartDiv.innerHTML = cartHTML;
+            totalUSDElement.textContent = totalUSD.toFixed(2);
+            totalBsElement.textContent = totalBs.toFixed(2);
+        }
+    
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartDisplay();
+            if (cart.length === 0) {
+                document.getElementById('confirmBtn').disabled = true;
+            }
+        }
+
+        function actualizarVistaCarrito() {
+    const cartContainer = document.getElementById("cart");
+    cartContainer.innerHTML = "";
+
+    if (cart.length === 0) {
+        cartContainer.innerHTML = "<tr><td colspan='5'>El carrito está vacío.</td></tr>";
+    } else {
+        cart.forEach((item, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>${item.precioUSD.toFixed(2)}</td>
+                <td>${item.cantidad}</td>
+                <td>${item.totalPriceUSD.toFixed(2)}</td>
+                <td><button onclick="eliminarItemCarrito(${index})">Eliminar</button></td>
+            `;
+            cartContainer.appendChild(row);
+        });
+    }
+
+    const totalUSD = cart.reduce((sum, item) => sum + item.totalPriceUSD, 0);
+    const totalBs = cart.reduce((sum, item) => sum + item.totalPriceBs, 0);
+    document.getElementById("totalUSD").textContent = totalUSD.toFixed(2);
+    document.getElementById("totalBs").textContent = totalBs.toFixed(2);
+}
+
+    
+        function confirmPurchase() {
+    if (cart.length === 0) {
+        alert("El carrito está vacío. Agrega productos antes de confirmar la compra.");
         return;
     }
 
-    purchases.forEach((purchase, index) => {
-        const facturaId = `factura-${index}`;
-        let html = `
-            <div class="historial-factura" style="border:1px solid #ccc; margin:10px 0; padding:10px;">
-                <strong>Compra ${index + 1} - ${purchase.time}</strong>
-                <ul>`;
+    const now = new Date();
+    const fechaHora = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        purchase.items.forEach(item => {
-            html += `<li>${item.name} - ${item.quantity}g - $${item.totalPriceUSD.toFixed(2)}</li>`;
-        });
+    // Mostrar la fecha en la factura
+    document.getElementById("invoice-date").innerText = fechaHora;
 
-        html += `</ul>
-                <button onclick="printHistoryInvoice(${index})">Imprimir</button>
-            </div>`;
+        // Obtener y mostrar el número de factura
+    const numeroFactura = obtenerNumeroFacturaFormateado();
+    document.getElementById("invoice-number").textContent = numeroFactura;
 
-        historyDiv.innerHTML += html;
-    });
 
-    historyDiv.innerHTML += `<button onclick="clearHistory()" style="margin-top:10px;">Borrar Historial</button>`;
-    historyDiv.style.display = "block";
+    // Guardar compra en historial
+    const compra = {
+        fecha: fechaHora,
+        items: [...cart], // Copiamos el contenido del carrito
+        totalUSD: cart.reduce((sum, item) => sum + item.totalPriceUSD, 0),
+        totalBs: cart.reduce((sum, item) => sum + item.totalPriceBs, 0)
+    };
+
+    let historial = JSON.parse(localStorage.getItem("historialCompras")) || [];
+
+    // Limpiar entradas de días anteriores
+    const hoy = new Date().toLocaleDateString();
+    historial = historial.filter(c => c.fecha.startsWith(hoy));
+
+    historial.push(compra);
+    localStorage.setItem("historialCompras", JSON.stringify(historial));
+
+    // Mostrar factura
+    renderInvoice();
+    document.getElementById('calculator').style.display = 'none';
+    document.getElementById('invoice').style.display = 'block';
+        
+    // Limpiar carrito
+        cart = [];
+    actualizarVistaCarrito(); // Esta función debería redibujar el carrito vacío
+
 }
 
-// Imprimir factura desde historial
-function printHistoryInvoice(index) {
-    const dateKey = new Date().toISOString().split('T')[0];
-    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
-    const purchase = stored[dateKey][index];
+    
+        function renderInvoice() {
+    const now = new Date();
+    const fechaHora = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    document.getElementById("invoice-date").innerText = fechaHora;
 
-    let invoiceHTML = `
-        <h2>Factura</h2>
-        <span>${dateKey} ${purchase.time}</span>
-        <table><thead><tr>
-            <th>Producto</th><th>Cant (g)</th><th>$/kg</th><th>Subtotal</th>
-        </tr></thead><tbody>`;
+    const invoiceItemsBody = document.getElementById('invoice-items'); 
+    const invoiceTotalUSD = document.getElementById('invoice-total-usd');
+    const invoiceTotalBs = document.getElementById('invoice-total-bs');
 
+    let invoiceHTML = '';
     let totalUSD = 0;
     let totalBs = 0;
-    purchase.items.forEach(item => {
-        invoiceHTML += `<tr>
-            <td>${item.name}</td>
-            <td>${item.quantity}</td>
-            <td>${item.price_usd_kg.toFixed(2)}</td>
-            <td>${item.totalPriceUSD.toFixed(2)}</td>
-        </tr>`;
+
+    cart.forEach(item => {
+        invoiceHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.price_usd_kg.toFixed(2)}</td>
+                <td>${item.totalPriceUSD.toFixed(2)}</td>
+            </tr>
+        `;
         totalUSD += item.totalPriceUSD;
         totalBs += item.totalPriceBs;
     });
 
-    invoiceHTML += `</tbody></table>
-        <div class="invoice-total">
-            <strong>Total: $${totalUSD.toFixed(2)} / Bs ${totalBs.toFixed(2)}</strong>
-        </div>`;
-
-    const printWindow = window.open('', '', 'width=400,height=600');
-    printWindow.document.write(`<html><head><title>Factura</title><style>
-        body { font-family: monospace; font-size: 12px; width: 80mm; margin: 0 auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { padding: 4px; border: none; text-align: left; }
-        .invoice-total { text-align: right; margin-top: 10px; }
-        h2 { text-align: center; margin: 0 0 10px 0; }
-    </style></head><body>${invoiceHTML}</body></html>`);
-    printWindow.document.close();
-    printWindow.print();
+    invoiceItemsBody.innerHTML = invoiceHTML;
+    invoiceTotalUSD.textContent = totalUSD.toFixed(2);
+    invoiceTotalBs.textContent = totalBs.toFixed(2);
 }
 
-// Borrar historial del día
-function clearHistory() {
-    if (confirm("¿Estás seguro de que quieres borrar el historial de hoy?")) {
-        const dateKey = new Date().toISOString().split('T')[0];
-        const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
-        delete stored[dateKey];
-        localStorage.setItem("purchaseHistory", JSON.stringify(stored));
-        document.getElementById("history").style.display = "none";
-    }
-}
-
-// Eliminar historial de días anteriores automáticamente
-window.onload = function () {
-    const today = new Date().toISOString().split('T')[0];
-    const stored = JSON.parse(localStorage.getItem("purchaseHistory")) || {};
-    for (let key in stored) {
-        if (key !== today) {
-            delete stored[key];
+    
+        function printInvoice() {
+            window.print();
         }
-    }
-    localStorage.setItem("purchaseHistory", JSON.stringify(stored));
-};
+    
+        function goBack() {
+            document.getElementById('invoice').style.display = 'none';
+            document.getElementById('calculator').style.display = 'block';
+        }
+    
+        fetchDollarRate();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

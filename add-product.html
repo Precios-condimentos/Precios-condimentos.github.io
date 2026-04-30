@@ -426,10 +426,8 @@
         <h3>Carrito de Compras</h3>
         <div id="cart"></div>
         <p><strong>Total: $<span id="totalUSD">0.00</span> / Bs <span id="totalBs">0.00</span></strong></p>
-
-        <button onclick="copiarPresupuesto()">Copiar presupuesto</button>
-
         <button onclick="confirmPurchase()" id="confirmBtn" disabled>Confirmar Compra</button>
+        <button onclick="window.open('history.html', '_blank')" class="no-print">Ver Historial de Compras</button>
 
     </div>
 
@@ -1121,28 +1119,57 @@
         }
     
         fetchDollarRate();
-
-    function copiarPresupuesto() {
-    if (cart.length === 0) {
-        alert("El carrito está vacío");
-        return;
-    }
-
-    let texto = "🧾 Pedido:\n\n";
-
-    cart.forEach(item => {
-        texto += `${item.name} (${item.quantity}gr)\n`;
-        texto += `${item.totalPriceUSD.toFixed(2)}$ / ${item.totalPriceBs.toFixed(2)}bs\n\n`;
-    });
-
-    navigator.clipboard.writeText(texto)
-        .then(() => {
-            alert("✅ Presupuesto copiado");
-        })
-        .catch(() => {
-            alert("❌ Error al copiar");
-        });
-}
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

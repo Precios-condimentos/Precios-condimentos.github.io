@@ -1129,11 +1129,19 @@
     }
 
     let texto = "🧾 Pedido:\n\n";
+    let totalUSD = 0;
+    let totalBs = 0;
 
     cart.forEach(item => {
         texto += `${item.name} (${item.quantity}gr)\n`;
         texto += `${item.totalPriceUSD.toFixed(2)}$ / ${item.totalPriceBs.toFixed(2)}bs\n\n`;
+
+        totalUSD += item.totalPriceUSD;
+        totalBs += item.totalPriceBs;
     });
+
+    texto += "——————————\n";
+    texto += `Total: ${totalUSD.toFixed(2)}$ / ${totalBs.toFixed(2)}bs`;
 
     navigator.clipboard.writeText(texto)
         .then(() => {

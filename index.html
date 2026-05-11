@@ -94,17 +94,34 @@
         <h2>Calculadora de Precios</h2>
         <p id="dollarRate">Cargando tasa del dólar BCV...</p>
 
-            <div class="dolar-manual">
-  <label>Tasa manual BCV:</label>
-  <input type="number" id="manualRate" step="0.01" placeholder="Ej: 105.50">
-  
-  <button onclick="guardarTasaManual()">
-    Guardar tasa manual
-  </button>
+            <div class="contenedor-dolar">
 
-  <button onclick="usarAPI()">
-    Volver a automático
-  </button>
+  <h2>
+    BCV:
+    <span id="bcv-price">$0</span>
+  </h2>
+
+  <p id="estadoDolar">
+    Automático
+  </p>
+
+  <div class="dolar-manual">
+
+    <label>Tasa manual BCV:</label>
+
+    <input
+      type="number"
+      id="manualRate"
+      step="0.01"
+      placeholder="Ej: 105.50"
+    >
+
+    <button id="guardarManual">
+      Guardar tasa manual
+    </button>
+  </div>
+
+</div>
 </div>
         <label for="category">Categoría:</label>
         <select id="category" onchange="filterProducts()">
@@ -883,9 +900,14 @@
 let modoManual =
   localStorage.getItem("modoManual") === "true";
 
+let tasaBCV = 0;
+
+let modoManual =
+  localStorage.getItem("modoManual") === "true";
+
 async function obtenerDolar() {
 
-  // Si está en modo manual
+  // MODO MANUAL
   if (modoManual) {
 
     tasaBCV =
@@ -899,7 +921,7 @@ async function obtenerDolar() {
   try {
 
     const response =
-      await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+      await fetch("https://pydolarve.org/api/v1/dollar?page=bcv");
 
     const data =
       await response.json();
@@ -927,6 +949,80 @@ async function obtenerDolar() {
     actualizarTasaEnPantalla();
   }
 }
+
+function guardarTasaManual() {
+
+  const input =
+    document.getElementById("manualRate");
+
+  const valor =
+    parseFloat(input.value);
+
+  if (!valor || valor <= 0) {
+
+    alert("Ingresa una tasa válida");
+
+    return;
+  }
+
+  localStorage.setItem(
+    "tasaManual",
+    valor
+  );
+
+  localStorage.setItem(
+    "modoManual",
+    "true"
+  );
+
+  modoManual = true;
+
+  tasaBCV = valor;
+
+  actualizarTasaEnPantalla();
+
+  alert("Tasa manual guardada");
+}
+
+function usarAPI() {
+
+  localStorage.setItem(
+    "modoManual",
+    "false"
+  );
+
+  modoManual = false;
+
+  obtenerDolar();
+}
+
+function actualizarTasaEnPantalla() {
+
+  document.getElementById("bcv-price")
+    .textContent = tasaBCV.toFixed(2);
+
+  document.getElementById("estadoDolar")
+    .textContent =
+      modoManual
+        ? "Modo manual"
+        : "Automático";
+}
+
+// BOTONES
+document.getElementById("guardarManual")
+  .addEventListener(
+    "click",
+    guardarTasaManual
+  );
+
+document.getElementById("volverAuto")
+  .addEventListener(
+    "click",
+    usarAPI
+  );
+
+// INICIAR
+obtenerDolar();
     
         function filterProducts() {
             const categorySelect = document.getElementById('category');
